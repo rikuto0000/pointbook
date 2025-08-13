@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp add:*)",
+      "Bash(python:*)",
+      "Bash(pip3 install:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
+
+{
+  "amp.mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--read-only",
+        "--project-ref=valo"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_61b51a13646d6e45dcbec620284c8fdeaa0bac96"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+[
+  { "id": "ascent", "name": "アセント", "image": "/static/images/maps/ascent.jpg" },
+  { "id": "split", "name": "スプリット", "image": "/static/images/maps/split.jpg" },
+  { "id": "haven", "name": "ヘイヴン", "image": "/static/images/maps/haven.jpg" },
+  { "id": "bind", "name": "バインド", "image": "/static/images/maps/bind.jpg" },
+  { "id": "breeze", "name": "ブリーズ", "image": "/static/images/maps/breeze.jpg" },
+  { "id": "lotus", "name": "ロータス", "image": "/static/images/maps/lotus.jpg" },
+  { "id": "sunset", "name": "サンセット", "image": "/static/images/maps/sunset.jpg" },
+  { "id": "icebox", "name": "アイスボックス", "image": "/static/images/maps/icebox.jpg" },
+  { "id": "fracture", "name": "フラクチャー", "image": "/static/images/maps/fracture.jpg" }
+]

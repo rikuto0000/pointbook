@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>攻守選択 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA設定 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    <div class="particle" style="left: 15%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 35%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 55%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 75%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 85%; animation-delay: 0.5s;"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+      <i class="fas fa-arrow-left"></i>
+      <span>マップ選択に戻る</span>
+    </a>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-6">
+      <i class="fas fa-shield-alt text-3xl text-glow-blue"></i>
+      <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
+        攻守選択
+      </h1>
+      <i class="fas fa-sword text-3xl text-glow"></i>
+    </div>
+    <p class="text-xl text-gray-300 font-medium tracking-wider">プレイするサイドを選択してください</p>
+    <div class="w-32 h-1 bg-gradient-to-r from-cyan-500 via-red-500 to-cyan-500 mx-auto mt-4 rounded"></div>
+  </header>
+
+  <!-- Side Selection -->
+  <main class="container mx-auto px-4 pb-8">
+    <div class="flex flex-col lg:flex-row items-center justify-center gap-8 max-w-4xl mx-auto">
+
+      <!-- Attack Button -->
+      <article class="w-full lg:w-96" style="animation: slideInLeft 1s ease-out 0.3s both;">
+        <a href="/map/{{ map_id }}/side/attack" class="block group">
+          <div class="card relative overflow-hidden p-8 text-center bg-gradient-to-br from-red-600/20 to-red-800/20 border-red-500/50 hover:border-red-400">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-10 bg-gradient-to-br from-red-500 to-orange-600"></div>
+            
+            <!-- Icon -->
+            <div class="relative mb-6">
+              <div class="w-24 h-24 mx-auto bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-2xl">
+                <i class="fas fa-sword text-4xl text-white"></i>
+              </div>
+              <div class="absolute inset-0 w-24 h-24 mx-auto bg-red-500/20 rounded-full animate-pulse"></div>
+            </div>
+            
+            <!-- Content -->
+            <h2 class="text-3xl font-bold text-white mb-4 group-hover:text-red-300 transition-colors duration-300">
+              攻撃サイド
+            </h2>
+            <p class="text-gray-300 text-lg mb-6 group-hover:text-white transition-colors duration-300">
+              スパイクを設置して勝利を掴め
+            </p>
+            
+            <!-- Features -->
+            <div class="space-y-2 text-sm text-gray-400">
+              <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-bomb text-red-400"></i>
+                <span>スパイク設置</span>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-crosshairs text-red-400"></i>
+                <span>エリア突破</span>
+              </div>
+            </div>
+
+            <!-- Hover Effect -->
+            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+          </div>
+        </a>
+      </article>
+
+      <!-- VS Divider -->
+      <div class="flex-shrink-0" style="animation: fadeInUp 1s ease-out 0.6s both;">
+        <div class="glass w-20 h-20 rounded-full flex items-center justify-center">
+          <span class="text-2xl font-bold text-glow">VS</span>
+        </div>
+      </div>
+
+      <!-- Defense Button -->
+      <article class="w-full lg:w-96" style="animation: slideInRight 1s ease-out 0.3s both;">
+        <a href="/map/{{ map_id }}/side/defense" class="block group">
+          <div class="card relative overflow-hidden p-8 text-center bg-gradient-to-br from-cyan-600/20 to-blue-800/20 border-cyan-500/50 hover:border-cyan-400">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-10 bg-gradient-to-br from-cyan-500 to-blue-600"></div>
+            
+            <!-- Icon -->
+            <div class="relative mb-6">
+              <div class="w-24 h-24 mx-auto bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-2xl">
+                <i class="fas fa-shield-alt text-4xl text-white"></i>
+              </div>
+              <div class="absolute inset-0 w-24 h-24 mx-auto bg-cyan-500/20 rounded-full animate-pulse"></div>
+            </div>
+            
+            <!-- Content -->
+            <h2 class="text-3xl font-bold text-white mb-4 group-hover:text-cyan-300 transition-colors duration-300">
+              防衛サイド
+            </h2>
+            <p class="text-gray-300 text-lg mb-6 group-hover:text-white transition-colors duration-300">
+              サイトを守り抜き勝利を守れ
+            </p>
+            
+            <!-- Features -->
+            <div class="space-y-2 text-sm text-gray-400">
+              <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-home text-cyan-400"></i>
+                <span>サイト防衛</span>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-tools text-cyan-400"></i>
+                <span>解除阻止</span>
+              </div>
+            </div>
+
+            <!-- Hover Effect -->
+            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+          </div>
+        </a>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <script>
+    // Enhanced interactions with error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        const cards = document.querySelectorAll('.card');
+        
+        if (cards) {
+          cards.forEach(card => {
+            // Add hover sound effect and vibration
+            card.addEventListener('mouseenter', function() {
+              try {
+                if (navigator.vibrate) {
+                  navigator.vibrate(20);
+                }
+              } catch (err) {
+                console.warn('Vibration not supported:', err);
+              }
+            });
+
+            card.addEventListener('click', function(e) {
+              try {
+                // Add click feedback
+                if (navigator.vibrate) {
+                  navigator.vibrate(50);
+                }
+                
+                // Add loading state
+                const loading = document.createElement('div');
+                loading.className = 'absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl';
+                loading.innerHTML = '<div class="loading w-6 h-6 border-2 border-white border-t-transparent rounded-full"></div>';
+                this.appendChild(loading);
+              } catch (err) {
+                console.warn('Click handler error:', err);
+              }
+            });
+          });
+        }
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = mouseX * speed * 15;
+                const y = mouseY * speed * 15;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+    
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>

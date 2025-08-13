@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>エージェント選択 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(12) %}
+    <div class="particle" style="left: {{ (i * 8 + 5) }}%; animation-delay: {{ i * 0.5 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/map/{{ map_id }}/side/{{ side }}" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+      <i class="fas fa-arrow-left"></i>
+      <span>ロール選択に戻る</span>
+    </a>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <i class="fas fa-user-ninja text-3xl text-glow"></i>
+      <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
+        エージェント選択
+      </h1>
+    </div>
+    <p class="text-xl text-gray-300 font-medium tracking-wider">お気に入りのエージェントを選択</p>
+    <div class="flex items-center justify-center gap-2 mt-4">
+      <div class="w-8 h-1 bg-red-500 rounded"></div>
+      <div class="w-8 h-1 bg-blue-500 rounded"></div>
+      <div class="w-8 h-1 bg-yellow-500 rounded"></div>
+      <div class="w-8 h-1 bg-green-500 rounded"></div>
+    </div>
+  </header>
+
+  <!-- Agents Grid -->
+  <main class="container mx-auto px-4 pb-8">
+    <div class="grid-container grid-agents max-w-7xl mx-auto">
+      {% for agent in agents %}
+        <article class="card group relative" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.05 }}s both;">
+          <a href="/map/{{ map_id }}/side/{{ side }}/agent/{{ agent.id }}" class="block h-full">
+            <!-- Agent Image -->
+            <div class="relative overflow-hidden rounded-t-2xl">
+              <img src="{{ agent.image }}" 
+                   alt="{{ agent.name }}" 
+                   class="w-full h-48 sm:h-56 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+              
+              <!-- Gradient Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <!-- Role Badge -->
+              <div class="absolute top-3 right-3 transform translate-x-8 group-hover:translate-x-0 transition-transform duration-300">
+                {% if agent.role == 'controller' %}
+                  <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-cloud text-white text-sm"></i>
+                  </div>
+                {% elif agent.role == 'initiator' %}
+                  <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-search text-white text-sm"></i>
+                  </div>
+                {% elif agent.role == 'sentinel' %}
+                  <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-white text-sm"></i>
+                  </div>
+                {% else %}
+                  <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-fire text-white text-sm"></i>
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Quick Action Button -->
+              <div class="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                <div class="flex items-center justify-center gap-2 text-white bg-black/50 backdrop-blur-sm rounded-lg py-2 px-4">
+                  <i class="fas fa-crosshairs text-sm"></i>
+                  <span class="font-semibold text-sm">定点を確認</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent Info -->
+            <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-b-2xl">
+              <h3 class="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300 mb-1">
+                {{ agent.name }}
+              </h3>
+              <p class="text-gray-400 text-sm capitalize group-hover:text-gray-300 transition-colors duration-300">
+                {% if agent.role == 'controller' %}
+                  コントローラー
+                {% elif agent.role == 'initiator' %}
+                  イニシエーター
+                {% elif agent.role == 'sentinel' %}
+                  センチネル
+                {% else %}
+                  デュエリスト
+                {% endif %}
+              </p>
+
+              <!-- Stats Bar (Placeholder) -->
+              <div class="flex gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-red-500 to-orange-500 w-4/5"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selection Indicator -->
+            <div class="absolute inset-0 border-2 border-transparent group-hover:border-red-500 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not agents %}
+      <div class="glass rounded-2xl p-8 text-center max-w-md mx-auto">
+        <i class="fas fa-users text-4xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-bold text-white mb-2">エージェントが見つかりません</h3>
+        <p class="text-gray-300">選択したロールにはまだエージェントがいません</p>
+      </div>
+    {% endif %}
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <script>
+    // Enhanced interactions
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      
+      cards.forEach((card, index) => {
+        // Stagger hover effects
+        card.addEventListener('mouseenter', function() {
+          if (navigator.vibrate) {
+            navigator.vibrate(15);
+          }
+          
+          // Add subtle glow effect
+          this.style.boxShadow = '0 20px 40px rgba(255, 70, 85, 0.3)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+          this.style.boxShadow = '';
+        });
+
+        card.addEventListener('click', function(e) {
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
+          
+          // Add click animation
+          this.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 100);
+          
+          // Add loading state
+          const loading = document.createElement('div');
+          loading.className = 'absolute inset-0 bg-black/70 flex items-center justify-center rounded-2xl z-10';
+          loading.innerHTML = '<div class="loading w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full"></div>';
+          this.appendChild(loading);
+        });
+      });
+
+      // Parallax effect for particles
+      document.addEventListener('mousemove', function(e) {
+        const particles = document.querySelectorAll('.particle');
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+
+        particles.forEach((particle, index) => {
+          const speed = (index + 1) * 0.2;
+          const x = mouseX * speed * 10;
+          const y = mouseY * speed * 10;
+          particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+        });
+      });
+
+      // Add agent selection sound effect (placeholder)
+      const agentLinks = document.querySelectorAll('a[href*="agent"]');
+      agentLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          // Here you could add agent-specific sound effects
+          console.log('Agent selected:', this.href.split('/').pop());
+        });
+      });
+    });
+  </script>
+</body>
+</html>

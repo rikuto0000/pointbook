@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>マップ選択 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 0.5s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 2.5s;"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mt-6 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <i class="fas fa-map-marked-alt text-3xl text-glow"></i>
+      <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
+        VALORANT
+      </h1>
+    </div>
+    <p class="text-xl text-gray-300 font-medium tracking-wider">マップを選択してください</p>
+    <div class="w-24 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mt-4 rounded"></div>
+  </header>
+
+  <!-- Maps Grid -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="grid-container grid-maps max-w-7xl mx-auto">
+      {% for map in maps %}
+        <article class="card group" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
+          <a href="/map/{{ map.id }}" class="block">
+            <div class="relative overflow-hidden rounded-t-2xl">
+              <img src="{{ map.image }}" 
+                   alt="{{ map.name }}" 
+                   class="w-full h-48 sm:h-56 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                <div class="flex items-center gap-2 text-white">
+                  <i class="fas fa-play-circle text-xl"></i>
+                  <span class="font-semibold">プレイ開始</span>
+                </div>
+              </div>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300">
+                {{ map.name }}
+              </h3>
+              <p class="text-gray-400 text-sm mt-2 group-hover:text-gray-300 transition-colors duration-300">
+                定点を確認する
+              </p>
+            </div>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <!-- Loading Indicator (Hidden by default) -->
+  <div id="loading" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+    <div class="glass p-8 rounded-2xl text-center">
+      <div class="loading w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p class="text-white">読み込み中...</p>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced interactions with error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Add click sound effect (optional)
+        const cards = document.querySelectorAll('.card');
+        if (cards) {
+          cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+              try {
+                // Add subtle vibration on mobile
+                if (navigator.vibrate) {
+                  navigator.vibrate(50);
+                }
+              } catch (err) {
+                console.warn('Vibration not supported:', err);
+              }
+            });
+          });
+        }
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.5;
+                const x = mouseX * speed * 20;
+                const y = mouseY * speed * 20;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax effect error:', err);
+          }
+        });
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+    
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>

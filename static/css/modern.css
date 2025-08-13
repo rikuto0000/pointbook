@@ -1,0 +1,316 @@
+/* Modern VALORANT UI Styles */
+
+:root {
+  /* VALORANT Colors */
+  --valo-red: #ff4655;
+  --valo-red-dark: #e13d4b;
+  --valo-red-darker: #c63645;
+  --valo-blue: #00bcd4;
+  --valo-blue-dark: #00a3b9;
+  --valo-dark-bg: #0f1923;
+  --valo-card-bg: #1c252f;
+  --valo-hover-bg: #2a3541;
+  --valo-border: rgba(255, 70, 85, 0.3);
+  
+  /* Gradients */
+  --gradient-red: linear-gradient(135deg, #ff4655 0%, #e13d4b 100%);
+  --gradient-blue: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+  --gradient-dark: linear-gradient(135deg, #1c252f 0%, #2a3541 100%);
+  --gradient-card: linear-gradient(145deg, #1c252f 0%, #253139 50%, #2a3541 100%);
+}
+
+/* Add line-clamp utility for older browsers */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--valo-dark-bg);
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 70, 85, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(0, 188, 212, 0.1) 0%, transparent 50%);
+  min-height: 100vh;
+}
+
+/* Enhanced Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 70, 85, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 70, 85, 0.6);
+  }
+}
+
+/* Enhanced Card Styles */
+.card {
+  background: var(--gradient-card);
+  border: 1px solid var(--valo-border);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s;
+}
+
+.card:hover::before {
+  left: 100%;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 70, 85, 0.2);
+  border-color: var(--valo-red);
+}
+
+/* Glassmorphism Effect */
+.glass {
+  background: rgba(28, 37, 47, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced Buttons */
+.btn-primary {
+  background: var(--gradient-red);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 16px 32px;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(255, 70, 85, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(255, 70, 85, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--gradient-blue);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 16px 32px;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 188, 212, 0.3);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 188, 212, 0.4);
+}
+
+/* Grid Layout Enhancements */
+.grid-container {
+  display: grid;
+  gap: 24px;
+  padding: 0 16px;
+}
+
+.grid-maps {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid-agents {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.grid-points {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+/* Image Enhancements */
+.enhanced-image {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  filter: brightness(0.9);
+}
+
+.enhanced-image:hover {
+  filter: brightness(1.1) saturate(1.2);
+  transform: scale(1.05);
+}
+
+/* Text Glow Effects */
+.text-glow {
+  text-shadow: 0 0 10px rgba(255, 70, 85, 0.5);
+}
+
+.text-glow-blue {
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+}
+
+/* Loading Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .card {
+    border-radius: 12px;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+}
+
+/* Floating Action Button Enhancement */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.fab:hover {
+  transform: translateY(-4px) rotate(90deg);
+  box-shadow: 0 15px 40px rgba(16, 185, 129, 0.6);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1c252f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-red);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--valo-red-dark);
+}
+
+/* Particle Animation Background */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--valo-red);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+  opacity: 0.1;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}

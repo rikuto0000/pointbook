@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>定点追加 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    @keyframes fade-up {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-up {
+      animation: fade-up 0.6s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0f1923] text-white min-h-screen p-4">
+
+  <h1 class="text-3xl sm:text-4xl font-bold text-center mb-8 text-[#ff4655] animate-fade-up">
+    定点を追加
+  </h1>
+
+  <form action="/add" method="POST" enctype="multipart/form-data"
+        class="bg-[#1c1c1c] p-6 rounded-xl max-w-xl mx-auto space-y-4 shadow-lg animate-fade-up delay-100">
+
+    <input type="text" name="title" placeholder="タイトル" required
+           class="w-full p-3 rounded bg-gray-800 text-white placeholder-gray-400" />
+
+    <textarea name="description" placeholder="説明" required
+              class="w-full p-3 rounded bg-gray-800 text-white placeholder-gray-400"></textarea>
+
+    <label class="block font-semibold">🗺 マップ</label>
+    <select name="map" required class="w-full p-3 rounded bg-gray-800 text-white">
+      <option value="">選択してください</option>
+      <option value="ascent">アセント</option>
+      <option value="split">スプリット</option>
+      <option value="bind">バインド</option>
+      <option value="haven">ヘイブン</option>
+      <option value="icebox">アイスボックス</option>
+      <option value="breeze">ブリーズ</option>
+      <option value="fracture">フラクチャー</option>
+      <option value="pearl">パール</option>
+      <option value="lotus">ロータス</option>
+      <option value="sunset">サンセット</option>
+    </select>
+
+    <label class="block font-semibold mt-2">⚔ サイド</label>
+    <select name="side" required class="w-full p-3 rounded bg-gray-800 text-white">
+      <option value="">選択してください</option>
+      <option value="attack">攻撃</option>
+      <option value="defense">防衛</option>
+    </select>
+
+    <label class="block font-semibold mt-2">🧑‍🚀 エージェント</label>
+    <select name="agent" required class="w-full p-3 rounded bg-gray-800 text-white">
+      <option value="">選択してください</option>
+      <option value="brimstone">ブリムストーン</option>
+      <option value="phoenix">フェニックス</option>
+      <option value="sage">セージ</option>
+      <option value="sova">ソーヴァ</option>
+      <option value="viper">ヴァイパー</option>
+      <option value="cypher">サイファー</option>
+      <option value="reyna">レイナ</option>
+      <option value="killjoy">キルジョイ</option>
+      <option value="breach">ブリーチ</option>
+      <option value="omen">オーメン</option>
+      <option value="jett">ジェット</option>
+      <option value="raze">レイズ</option>
+      <option value="skye">スカイ</option>
+      <option value="yoru">ヨル</option>
+      <option value="astra">アストラ</option>
+      <option value="kayo">KAY/O</option>
+      <option value="chamber">チェンバー</option>
+      <option value="neon">ネオン</option>
+      <option value="fade">フェイド</option>
+      <option value="harbor">ハーバー</option>
+      <option value="gekko">ゲッコー</option>
+      <option value="deadlock">デッドロック</option>
+      <option value="clove">クローヴ</option>
+      <option value="iso">アイソ</option>
+      <option value="vyse">ヴァイス</option>
+      <option value="tejo">テホ</option>
+      <option value="waylay">ウェイレイ</option>
+    </select>
+
+    <label class="block font-semibold mt-4">📍 立ち位置画像</label>
+    <input type="file" name="stand_image" accept="image/*" required class="w-full text-white" />
+
+    <label class="block font-semibold mt-4">🎯 定点画像</label>
+    <input type="file" name="point_image" accept="image/*" required class="w-full text-white" />
+
+    <label class="block font-semibold mt-4">👁 着弾位置画像</label>
+    <input type="file" name="extra_image" accept="image/*" required class="w-full text-white" />
+
+    <button type="submit"
+            class="w-full bg-[#ff4655] hover:bg-[#e13d4b] active:bg-[#c63645]
+                   text-white font-bold py-3 rounded-xl transition transform hover:scale-105 active:scale-95">
+      登録する
+    </button>
+  </form>
+
+</body>
+</html>
