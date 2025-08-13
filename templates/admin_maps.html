@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>マップ管理 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(6) %}
+    <div class="particle" style="left: {{ (i * 15 + 10) }}%; animation-delay: {{ i * 0.8 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <div class="flex items-center justify-between">
+      <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+        <i class="fas fa-home"></i>
+        <span>ホームに戻る</span>
+      </a>
+      <div class="text-yellow-400 flex items-center gap-2">
+        <i class="fas fa-user-shield"></i>
+        <span class="text-sm">管理者モード</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-6">
+      <i class="fas fa-map text-3xl text-glow"></i>
+      <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
+        マップ管理
+      </h1>
+    </div>
+    <p class="text-xl text-gray-300 font-medium tracking-wider">新しいマップの追加・既存マップの管理</p>
+    <div class="w-32 h-1 bg-gradient-to-r from-purple-500 via-red-500 to-yellow-500 mx-auto mt-4 rounded"></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 pb-8">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Add New Map Form -->
+      <div class="glass rounded-2xl p-8 mb-8" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <i class="fas fa-plus-circle text-green-400"></i>
+          新しいマップを追加
+        </h2>
+        
+        <form action="/admin/maps/add" method="POST" enctype="multipart/form-data" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Map ID -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-key text-blue-400"></i>
+                マップID（英語名）
+              </label>
+              <input type="text" name="map_id" placeholder="例: pearl" required
+                     class="form-input lowercase" pattern="[a-z]+" />
+              <small class="text-gray-400 text-xs mt-1">英小文字のみ、スペースなし</small>
+            </div>
+
+            <!-- Map Name -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-tag text-purple-400"></i>
+                マップ名（日本語）
+              </label>
+              <input type="text" name="map_name" placeholder="例: パール" required
+                     class="form-input" />
+            </div>
+          </div>
+
+          <!-- Map Image -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-image text-yellow-400"></i>
+              マップ画像
+            </label>
+            <div class="file-upload-wrapper">
+              <input type="file" name="map_image" accept="image/*" required 
+                     class="file-input" id="map_image" />
+              <label for="map_image" class="file-upload-label">
+                <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+                <span>マップ画像を選択</span>
+                <small>クリックして画像を選択（推奨: 16:9比率）</small>
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-center">
+            <button type="submit" class="btn-primary inline-flex items-center justify-center gap-2">
+              <i class="fas fa-plus"></i>
+              <span>マップを追加</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Existing Maps -->
+      <div class="glass rounded-2xl p-8" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+          <i class="fas fa-list text-blue-400"></i>
+          既存のマップ
+          <span class="text-lg text-gray-400">({{ maps|length }}件)</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for map in maps %}
+          <div class="card p-4 hover:scale-105">
+            <div class="relative overflow-hidden rounded-lg mb-4">
+              <img src="{{ map.image }}" alt="{{ map.name }}" 
+                   class="w-full h-32 object-cover">
+              <div class="absolute top-2 right-2">
+                <button onclick="deleteMap('{{ map.id }}')" 
+                        class="bg-red-600 hover:bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="text-center">
+              <h3 class="text-lg font-bold text-white mb-1">{{ map.name }}</h3>
+              <p class="text-gray-400 text-sm">ID: {{ map.id }}</p>
+              <div class="mt-3 text-xs text-gray-500">
+                追加日: {{ map.created_at.strftime('%Y/%m/%d') if map.created_at else '不明' }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="glass rounded-2xl p-6 mt-8" style="animation: fadeInUp 0.8s ease-out 0.6s both;">
+        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-lightning-bolt text-yellow-400"></i>
+          クイックアクション
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button onclick="addPearl()" class="btn-secondary w-full">
+            <i class="fas fa-plus"></i>
+            <span>パールを追加</span>
+          </button>
+          <button onclick="updateAllImages()" class="btn-secondary w-full">
+            <i class="fas fa-sync"></i>
+            <span>画像を更新</span>
+          </button>
+          <a href="/admin" class="btn-secondary w-full">
+            <i class="fas fa-cog"></i>
+            <span>管理画面</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // File upload preview
+        const fileInput = document.getElementById('map_image');
+        if (fileInput) {
+          fileInput.addEventListener('change', function(e) {
+            try {
+              const file = e.target.files[0];
+              const label = document.querySelector('label[for="map_image"]');
+              
+              if (file && label) {
+                const fileName = file.name.length > 30 ? 
+                  file.name.substring(0, 30) + '...' : file.name;
+                label.querySelector('span').textContent = fileName;
+                label.classList.add('file-selected');
+              }
+            } catch (err) {
+              console.warn('File preview error:', err);
+            }
+          });
+        }
+
+        // Map ID auto-format
+        const mapIdInput = document.querySelector('input[name="map_id"]');
+        if (mapIdInput) {
+          mapIdInput.addEventListener('input', function(e) {
+            // Convert to lowercase and remove spaces
+            e.target.value = e.target.value.toLowerCase().replace(/[^a-z]/g, '');
+          });
+        }
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = mouseX * speed * 10;
+                const y = mouseY * speed * 10;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+
+    // Delete map function
+    function deleteMap(mapId) {
+      if (confirm(`マップ「${mapId}」を削除しますか？\n\n注意: このマップに関連する全ての定点も削除されます！`)) {
+        fetch(`/admin/maps/delete/${mapId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            alert('削除に失敗しました');
+          }
+        })
+        .catch(err => {
+          console.error('Delete error:', err);
+          alert('削除中にエラーが発生しました');
+        });
+      }
+    }
+
+    // Quick add Pearl
+    function addPearl() {
+      if (confirm('パールマップを追加しますか？')) {
+        fetch('/admin/maps/quick-add/pearl', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('パールが追加されました！');
+            location.reload();
+          } else {
+            alert('追加に失敗しました');
+          }
+        })
+        .catch(err => {
+          console.error('Add error:', err);
+          alert('追加中にエラーが発生しました');
+        });
+      }
+    }
+
+    // Update all images
+    function updateAllImages() {
+      if (confirm('全てのマップ画像を最新版に更新しますか？')) {
+        fetch('/admin/maps/update-images', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('画像が更新されました！');
+            location.reload();
+          } else {
+            alert('更新に失敗しました');
+          }
+        })
+        .catch(err => {
+          console.error('Update error:', err);
+          alert('更新中にエラーが発生しました');
+        });
+      }
+    }
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>
