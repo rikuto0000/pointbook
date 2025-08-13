@@ -50,6 +50,28 @@
     <div class="particle" style="left: 90%; animation-delay: 2.5s;"></div>
   </div>
 
+  <!-- Navigation -->
+  <nav class="p-4 flex justify-end" style="animation: slideInRight 0.6s ease-out;">
+    <div class="flex items-center gap-4">
+      {% if user %}
+        <a href="/profile" class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300" style="pointer-events: auto; z-index: 1000;">
+          <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff' }}" 
+               alt="{{ user.username }}" 
+               class="w-8 h-8 rounded-full">
+          <span class="hidden sm:inline">{{ user.username }}</span>
+        </a>
+        <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      {% else %}
+        <a href="/login" class="btn-primary text-sm py-2 px-4">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>ログイン</span>
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mt-6 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
     <div class="flex items-center justify-center gap-4 mb-4">
@@ -111,6 +133,8 @@
     // Enhanced interactions with error handling
     document.addEventListener('DOMContentLoaded', function() {
       try {
+        // Profile link handler removed - using standard HTML links
+        
         // Add click sound effect (optional)
         const cards = document.querySelectorAll('.card');
         if (cards) {

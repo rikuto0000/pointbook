@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ user.username }}のプロフィール | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(6) %}
+    <div class="particle" style="left: {{ (i * 15 + 10) }}%; animation-delay: {{ i * 0.8 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4 flex justify-between items-center" style="animation: slideInLeft 0.6s ease-out;">
+    <div class="flex items-center gap-4">
+      <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+        <i class="fas fa-home"></i>
+        <span>ホーム</span>
+      </a>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
+        <i class="fas fa-sign-out-alt"></i>
+        <span class="hidden sm:inline">ログアウト</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
+      <!-- Avatar -->
+      <div class="relative">
+        <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff&size=120' }}" 
+             alt="{{ user.username }}" 
+             class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-red-500 shadow-lg">
+        <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
+          <i class="fas fa-check text-white text-xs"></i>
+        </div>
+      </div>
+      
+      <!-- User Info -->
+      <div class="text-center sm:text-left">
+        <h1 class="text-3xl sm:text-4xl font-bold text-glow mb-2">
+          {{ user.username }}
+        </h1>
+        <p class="text-gray-300 text-lg mb-3">VALORANTプレイヤー</p>
+        <div class="flex items-center justify-center sm:justify-start gap-4 text-sm text-gray-400">
+          <div class="flex items-center gap-1">
+            <i class="fas fa-calendar"></i>
+            <span>参加日: 2024年1月</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <i class="fas fa-star text-yellow-400"></i>
+            <span>アクティブユーザー</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-3 gap-4 sm:gap-6">
+      <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors duration-300">
+        <div class="text-2xl sm:text-3xl font-bold text-red-400 mb-1">{{ likes_count }}</div>
+        <div class="text-sm text-gray-400">いいね</div>
+      </div>
+      <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors duration-300">
+        <div class="text-2xl sm:text-3xl font-bold text-yellow-400 mb-1">{{ bookmarks_count }}</div>
+        <div class="text-sm text-gray-400">保存</div>
+      </div>
+      <div class="glass rounded-xl p-4 hover:bg-white/5 transition-colors duration-300">
+        <div class="text-2xl sm:text-3xl font-bold text-blue-400 mb-1">{{ posts_count }}</div>
+        <div class="text-sm text-gray-400">投稿</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 pb-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+
+      <!-- Recent Liked Setups -->
+      {% if liked_setups %}
+      <section class="glass rounded-2xl p-6" style="animation: fadeInUp 0.8s ease-out 0.1s both;">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+            <i class="fas fa-heart text-white"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">最近いいねした定点</h2>
+            <p class="text-gray-400 text-sm">お気に入りの定点をチェック</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for setup in liked_setups %}
+          <article class="card group">
+            <a href="/point/{{ setup.id }}" class="block">
+              <!-- Setup Image -->
+              <div class="relative overflow-hidden rounded-t-2xl">
+                <img src="{{ setup.point_image }}" 
+                     alt="{{ setup.title }}" 
+                     class="w-full h-32 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              
+              <!-- Setup Info -->
+              <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-b-2xl">
+                <h3 class="font-bold text-white mb-2 line-clamp-1">{{ setup.title }}</h3>
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 bg-red-500/20 text-red-300 rounded-full">
+                      {{ setup.side | title }}
+                    </span>
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                      {{ setup.agent | title }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <i class="fas fa-heart text-red-400"></i>
+                    <span>{{ setup.likes_count or 0 }}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% if likes_count > 5 %}
+        <div class="text-center mt-6">
+          <a href="/profile/likes" class="btn-primary inline-flex items-center gap-2">
+            <i class="fas fa-heart"></i>
+            <span>すべてのいいね ({{ likes_count }})</span>
+          </a>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <!-- Recent Bookmarked Setups -->
+      {% if bookmarked_setups %}
+      <section class="glass rounded-2xl p-6" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
+            <i class="fas fa-bookmark text-white"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">最近保存した定点</h2>
+            <p class="text-gray-400 text-sm">後で見返したい定点</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for setup in bookmarked_setups %}
+          <article class="card group">
+            <a href="/point/{{ setup.id }}" class="block">
+              <!-- Setup Image -->
+              <div class="relative overflow-hidden rounded-t-2xl">
+                <img src="{{ setup.point_image }}" 
+                     alt="{{ setup.title }}" 
+                     class="w-full h-32 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              
+              <!-- Setup Info -->
+              <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-b-2xl">
+                <h3 class="font-bold text-white mb-2 line-clamp-1">{{ setup.title }}</h3>
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 bg-red-500/20 text-red-300 rounded-full">
+                      {{ setup.side | title }}
+                    </span>
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                      {{ setup.agent | title }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <i class="fas fa-bookmark text-yellow-400"></i>
+                    <span>保存済み</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% if bookmarks_count > 5 %}
+        <div class="text-center mt-6">
+          <a href="/profile/bookmarks" class="btn-primary inline-flex items-center gap-2">
+            <i class="fas fa-bookmark"></i>
+            <span>すべての保存 ({{ bookmarks_count }})</span>
+          </a>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <!-- Empty State -->
+      {% if not liked_setups and not bookmarked_setups %}
+      <div class="glass rounded-2xl p-12 text-center">
+        <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-user-circle text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-3">活動を開始しよう！</h3>
+        <p class="text-gray-300 mb-6">定点にいいねや保存をして、プロフィールを充実させましょう</p>
+        <a href="/" class="btn-primary inline-flex items-center gap-2">
+          <i class="fas fa-home"></i>
+          <span>定点を探す</span>
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <script>
+    // Parallax effect
+    document.addEventListener('mousemove', function(e) {
+      try {
+        const particles = document.querySelectorAll('.particle');
+        if (particles.length > 0) {
+          const mouseX = e.clientX / window.innerWidth;
+          const mouseY = e.clientY / window.innerHeight;
+
+          particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.3;
+            const x = mouseX * speed * 15;
+            const y = mouseY * speed * 15;
+            if (particle && particle.style) {
+              particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Parallax error:', err);
+      }
+    });
+
+    // Enhanced interactions
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      
+      cards.forEach((card) => {
+        card.addEventListener('mouseenter', function() {
+          this.style.boxShadow = '0 25px 50px rgba(255, 70, 85, 0.25)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+          this.style.boxShadow = '';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ログイン | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(8) %}
+    <div class="particle" style="left: {{ (i * 12 + 5) }}%; animation-delay: {{ i * 0.6 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+      <i class="fas fa-home"></i>
+      <span>ホームに戻る</span>
+    </a>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-md w-full">
+      
+      <!-- Login Card -->
+      <div class="glass rounded-2xl p-8" style="animation: fadeInUp 0.8s ease-out;">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <i class="fas fa-user text-white text-3xl"></i>
+          </div>
+          <h1 class="text-3xl font-bold text-glow mb-2">ログイン</h1>
+          <p class="text-gray-400">アカウントにサインインしてください</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+            <div class="mb-4 p-3 rounded-lg {% if category == 'error' %}bg-red-500/20 text-red-300 border border-red-500/30{% elif category == 'success' %}bg-green-500/20 text-green-300 border border-green-500/30{% else %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% endif %}">
+              {{ message }}
+            </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Tab Switcher -->
+        <div class="flex mb-6 bg-gray-800/50 rounded-lg p-1">
+          <button id="loginTab" class="flex-1 py-2 px-4 rounded-md text-white font-semibold transition-all duration-300 bg-gradient-to-r from-red-500 to-pink-600">
+            ログイン
+          </button>
+          <button id="registerTab" class="flex-1 py-2 px-4 rounded-md text-gray-400 font-semibold transition-all duration-300 hover:text-white">
+            新規登録
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" action="/login" method="POST" class="space-y-4">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-user text-blue-400"></i>
+              ユーザー名
+            </label>
+            <input type="text" name="username" required 
+                   class="form-input" placeholder="ユーザー名を入力" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-lock text-yellow-400"></i>
+              パスワード
+            </label>
+            <input type="password" name="password" required 
+                   class="form-input" placeholder="パスワードを入力" />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="remember" class="w-4 h-4 rounded bg-gray-700 border-gray-600 text-red-500 focus:ring-red-500">
+              <span class="text-gray-400 text-sm">ログイン状態を保持</span>
+            </label>
+            <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+              パスワードを忘れた？
+            </a>
+          </div>
+
+          <button type="submit" class="btn-primary w-full">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>ログイン</span>
+          </button>
+        </form>
+
+        <!-- Register Form (Hidden by default) -->
+        <form id="registerForm" action="/register" method="POST" class="space-y-4 hidden">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-user text-blue-400"></i>
+              ユーザー名
+            </label>
+            <input type="text" name="username" required 
+                   class="form-input" placeholder="3文字以上で入力"
+                   pattern=".{3,}" title="3文字以上で入力してください" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-envelope text-green-400"></i>
+              メールアドレス（任意）
+            </label>
+            <input type="email" name="email" 
+                   class="form-input" placeholder="example@email.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-lock text-yellow-400"></i>
+              パスワード
+            </label>
+            <input type="password" name="password" required 
+                   class="form-input" placeholder="6文字以上で入力"
+                   pattern=".{6,}" title="6文字以上で入力してください" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-lock text-purple-400"></i>
+              パスワード（確認）
+            </label>
+            <input type="password" name="password_confirm" required 
+                   class="form-input" placeholder="パスワードを再入力" />
+          </div>
+
+          <button type="submit" class="btn-primary w-full">
+            <i class="fas fa-user-plus"></i>
+            <span>アカウント作成</span>
+          </button>
+        </form>
+
+        <!-- Social Login -->
+        <div class="mt-6 pt-6 border-t border-gray-700">
+          <p class="text-center text-gray-400 text-sm mb-4">または以下の方法でログイン</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors">
+              <i class="fab fa-google"></i>
+              <span>Google</span>
+            </button>
+            <button class="flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors">
+              <i class="fab fa-discord"></i>
+              <span>Discord</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Guest Mode -->
+        <div class="mt-6 text-center">
+          <a href="/" class="text-gray-400 hover:text-white transition-colors text-sm">
+            <i class="fas fa-user-slash"></i>
+            ゲストとして続ける
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Features Info -->
+      <div class="glass rounded-xl p-4 mt-6 text-center" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+        <h3 class="text-lg font-bold text-white mb-3">ログインすると使える機能</h3>
+        <div class="grid grid-cols-3 gap-3 text-sm">
+          <div class="text-center">
+            <i class="fas fa-heart text-red-400 text-xl mb-1"></i>
+            <p class="text-gray-300">いいね</p>
+          </div>
+          <div class="text-center">
+            <i class="fas fa-bookmark text-yellow-400 text-xl mb-1"></i>
+            <p class="text-gray-300">保存</p>
+          </div>
+          <div class="text-center">
+            <i class="fas fa-comment text-blue-400 text-xl mb-1"></i>
+            <p class="text-gray-300">コメント</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginTab = document.getElementById('loginTab');
+      const registerTab = document.getElementById('registerTab');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+
+      // Tab switching
+      loginTab.addEventListener('click', function() {
+        loginTab.classList.add('bg-gradient-to-r', 'from-red-500', 'to-pink-600', 'text-white');
+        loginTab.classList.remove('text-gray-400');
+        registerTab.classList.remove('bg-gradient-to-r', 'from-red-500', 'to-pink-600', 'text-white');
+        registerTab.classList.add('text-gray-400');
+        
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+      });
+
+      registerTab.addEventListener('click', function() {
+        registerTab.classList.add('bg-gradient-to-r', 'from-red-500', 'to-pink-600', 'text-white');
+        registerTab.classList.remove('text-gray-400');
+        loginTab.classList.remove('bg-gradient-to-r', 'from-red-500', 'to-pink-600', 'text-white');
+        loginTab.classList.add('text-gray-400');
+        
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      });
+
+      // Password confirmation validation
+      const registerFormElement = document.getElementById('registerForm');
+      if (registerFormElement) {
+        registerFormElement.addEventListener('submit', function(e) {
+          const password = this.querySelector('input[name="password"]').value;
+          const passwordConfirm = this.querySelector('input[name="password_confirm"]').value;
+          
+          if (password !== passwordConfirm) {
+            e.preventDefault();
+            alert('パスワードが一致しません');
+            return false;
+          }
+        });
+      }
+
+      // Parallax effect
+      document.addEventListener('mousemove', function(e) {
+        try {
+          const particles = document.querySelectorAll('.particle');
+          if (particles.length > 0) {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+
+            particles.forEach((particle, index) => {
+              const speed = (index + 1) * 0.2;
+              const x = mouseX * speed * 8;
+              const y = mouseY * speed * 8;
+              if (particle && particle.style) {
+                particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+              }
+            });
+          }
+        } catch (err) {
+          console.warn('Parallax error:', err);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

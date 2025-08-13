@@ -244,8 +244,46 @@
   </div>
 
   <script>
+    // Immediately clear any existing loading overlays
+    (function() {
+      const existingOverlays = document.querySelectorAll('.loading-overlay');
+      existingOverlays.forEach(overlay => overlay.remove());
+    })();
+    
+    // Global loading management
+    let isNavigating = false;
+    
+    // Function to clear all loading overlays
+    function clearLoadingOverlays() {
+      const loadingOverlays = document.querySelectorAll('.loading-overlay');
+      loadingOverlays.forEach(overlay => {
+        if (overlay && overlay.parentElement) {
+          overlay.remove();
+        }
+      });
+      isNavigating = false;
+    }
+    
+    // Clear loading overlays when page loads
+    window.addEventListener('pageshow', function(event) {
+      // Only clear if this is a back/forward navigation
+      if (event.persisted) {
+        setTimeout(clearLoadingOverlays, 100);
+      }
+    });
+    
+    // Handle browser back button specifically
+    window.addEventListener('popstate', function(event) {
+      setTimeout(clearLoadingOverlays, 200);
+    });
+
     // Enhanced interactions
     document.addEventListener('DOMContentLoaded', function() {
+      // Clear any lingering overlays and reset navigation state
+      setTimeout(() => {
+        clearLoadingOverlays();
+        isNavigating = false;
+      }, 50);
       const cards = document.querySelectorAll('.card');
       
       cards.forEach((card, index) => {
@@ -261,16 +299,64 @@
         });
 
         card.addEventListener('click', function(e) {
-          if (navigator.vibrate) {
-            navigator.vibrate(30);
+          // ボタンクリックの場合は何もしない
+          if (e.target.closest('button')) {
+            return;
           }
           
-          const loading = document.createElement('div');
-          loading.className = 'absolute inset-0 bg-black/70 flex items-center justify-center rounded-2xl z-20';
-          loading.innerHTML = '<div class="loading w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full"></div>';
-          this.appendChild(loading);
+          // 連打防止
+          if (isNavigating) {
+            return;
+          }
+          
+          const link = this.querySelector('a');
+          const url = link ? link.href : null;
+          
+          if (url) {
+            isNavigating = true;
+            
+            if (navigator.vibrate) {
+              navigator.vibrate(30);
+            }
+            
+            // シンプルなローディング表示
+            const loading = document.createElement('div');
+            loading.className = 'loading-overlay absolute inset-0 bg-black/70 flex items-center justify-center rounded-2xl z-20';
+            loading.innerHTML = `
+              <div class="text-center">
+                <div class="loading w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p class="text-white text-sm">読み込み中...</p>
+              </div>
+            `;
+            this.appendChild(loading);
+            
+            // 直接ページ遷移（短い遅延で確実に遷移）
+            setTimeout(() => {
+              try {
+                window.location.href = url;
+              } catch (error) {
+                console.error('Navigation error:', error);
+                // エラーの場合はローディングを削除
+                if (loading.parentElement) {
+                  loading.remove();
+                }
+                isNavigating = false;
+              }
+            }, 150);
+            
+            // フェイルセーフ: 2秒後にローディングを削除
+            setTimeout(() => {
+              if (loading.parentElement) {
+                loading.remove();
+                isNavigating = false;
+              }
+            }, 2000);
+            
+          }
         });
       });
+      
+      // Remove this interval check as it was too aggressive
 
       // Parallax effect
       document.addEventListener('mousemove', function(e) {

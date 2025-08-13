@@ -35,6 +35,14 @@
 
   <!-- Fallback styles -->
   {% include 'base_styles.html' %}
+  
+  <!-- User State -->
+  <script>
+    window.currentUser = {{ user|tojson if user else 'null' }};
+    window.setupId = "{{ point.id }}";
+    window.isLiked = {{ 'true' if is_liked else 'false' }};
+    window.isBookmarked = {{ 'true' if is_bookmarked else 'false' }};
+  </script>
 </head>
 
 <body>
@@ -46,11 +54,37 @@
   </div>
 
   <!-- Navigation -->
-  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
-    <a href="javascript:history.back()" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-      <i class="fas fa-arrow-left"></i>
-      <span>戻る</span>
-    </a>
+  <nav class="p-4 flex justify-between items-center" style="animation: slideInLeft 0.6s ease-out;">
+    <div class="flex items-center gap-4">
+      <button onclick="goBack()" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+        <i class="fas fa-arrow-left"></i>
+        <span>戻る</span>
+      </button>
+      <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+        <i class="fas fa-home"></i>
+        <span>ホーム</span>
+      </a>
+    </div>
+    
+    <!-- User Info -->
+    <div class="flex items-center gap-4">
+      {% if user %}
+        <a href="/profile" class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors" style="pointer-events: auto; z-index: 1000;">
+          <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff' }}" 
+               alt="{{ user.username }}" 
+               class="w-8 h-8 rounded-full">
+          <span class="hidden sm:inline">{{ user.username }}</span>
+        </a>
+        <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      {% else %}
+        <a href="/login" class="btn-primary text-sm py-2 px-4">
+          <i class="fas fa-sign-in-alt"></i>
+          <span class="hidden sm:inline">ログイン</span>
+        </a>
+      {% endif %}
+    </div>
   </nav>
 
   <!-- Header -->
@@ -64,12 +98,53 @@
     <div class="flex items-center justify-center gap-6 mt-4 text-sm">
       <div class="flex items-center gap-2">
         <i class="fas fa-heart text-red-400"></i>
-        <span>{{ point.likes_count or 0 }} いいね</span>
+        <span id="likes-count">{{ point.likes_count or 0 }}</span> いいね
       </div>
       <div class="flex items-center gap-2">
-        <i class="fas fa-eye text-blue-400"></i>
-        <span>123 回表示</span>
+        <i class="fas fa-map text-blue-400"></i>
+        <span>{{ point.map }}</span>
       </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-user text-purple-400"></i>
+        <span>{{ point.agent }}</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-3 justify-center mt-6">
+      {% if user %}
+        <button id="like-btn" onclick="toggleLike()" 
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105
+                       {% if is_liked %}bg-gradient-to-r from-red-500 to-pink-600 text-white{% else %}bg-gray-700 hover:bg-gray-600 text-gray-300{% endif %}">
+          <i class="{% if is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+          <span>{% if is_liked %}いいね済み{% else %}いいね{% endif %}</span>
+        </button>
+        
+        <button id="bookmark-btn" onclick="toggleBookmark()" 
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105
+                       {% if is_bookmarked %}bg-gradient-to-r from-yellow-500 to-orange-600 text-white{% else %}bg-gray-700 hover:bg-gray-600 text-gray-300{% endif %}">
+          <i class="{% if is_bookmarked %}fas{% else %}far{% endif %} fa-bookmark"></i>
+          <span>{% if is_bookmarked %}保存済み{% else %}保存{% endif %}</span>
+        </button>
+      {% else %}
+        <a href="/login?next={{ request.url }}" 
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-semibold transition-all duration-300">
+          <i class="far fa-heart"></i>
+          <span>ログインしていいね</span>
+        </a>
+        
+        <a href="/login?next={{ request.url }}" 
+           class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-semibold transition-all duration-300">
+          <i class="far fa-bookmark"></i>
+          <span>ログインして保存</span>
+        </a>
+      {% endif %}
+      
+      <button onclick="sharePoint()" 
+              class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-share"></i>
+        <span>共有</span>
+      </button>
     </div>
   </header>
 
@@ -90,10 +165,10 @@
             </div>
           </div>
         </div>
-        <div class="relative overflow-hidden">
+        <div class="relative overflow-hidden cursor-pointer" onclick="openLightbox('{{ point.stand_image }}', '立ち位置')">
           <img src="{{ point.stand_image }}" 
                alt="立ち位置" 
-               class="w-full h-64 sm:h-80 object-cover enhanced-image"
+               class="w-full h-64 sm:h-80 object-cover enhanced-image hover:scale-105 transition-transform duration-300"
                loading="lazy"
                onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-64 bg-gray-700 text-gray-400\'><i class=\'fas fa-image text-4xl\'></i></div>'" />
         </div>
@@ -112,10 +187,10 @@
             </div>
           </div>
         </div>
-        <div class="relative overflow-hidden">
+        <div class="relative overflow-hidden cursor-pointer" onclick="openLightbox('{{ point.point_image }}', 'エイムポイント')">
           <img src="{{ point.point_image }}" 
                alt="エイムポイント" 
-               class="w-full h-64 sm:h-80 object-cover enhanced-image"
+               class="w-full h-64 sm:h-80 object-cover enhanced-image hover:scale-105 transition-transform duration-300"
                loading="lazy"
                onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-64 bg-gray-700 text-gray-400\'><i class=\'fas fa-image text-4xl\'></i></div>'" />
         </div>
@@ -129,35 +204,31 @@
               <i class="fas fa-info-circle text-white text-lg"></i>
             </div>
             <div>
-              <h2 class="text-xl font-bold text-white">補足情報</h2>
-              <p class="text-gray-300 text-sm">追加のヒントや注意点</p>
+              <h2 class="text-xl font-bold text-white">着弾位置</h2>
+              <p class="text-gray-300 text-sm">スキルの効果範囲</p>
             </div>
           </div>
         </div>
-        <div class="relative overflow-hidden rounded-b-2xl">
+        <div class="relative overflow-hidden rounded-b-2xl cursor-pointer" onclick="openLightbox('{{ point.extra_image }}', '着弾位置')">
           <img src="{{ point.extra_image }}" 
-               alt="補足情報" 
-               class="w-full h-64 sm:h-80 object-cover enhanced-image"
+               alt="着弾位置" 
+               class="w-full h-64 sm:h-80 object-cover enhanced-image hover:scale-105 transition-transform duration-300"
                loading="lazy"
                onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-64 bg-gray-700 text-gray-400\'><i class=\'fas fa-image text-4xl\'></i></div>'" />
         </div>
       </article>
 
-      <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
-        <button onclick="likePoint()" class="btn-primary inline-flex items-center justify-center gap-2">
-          <i class="fas fa-heart"></i>
-          <span>いいね</span>
-        </button>
-        <button onclick="bookmarkPoint()" class="inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-          <i class="fas fa-bookmark"></i>
-          <span>ブックマーク</span>
-        </button>
-        <button onclick="sharePoint()" class="inline-flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-          <i class="fas fa-share"></i>
-          <span>共有</span>
-        </button>
+      <!-- Delete Button (if owner) -->
+      {% if user and (user.id == point.user_id or user.id == SYSTEM_USER_ID) %}
+      <div class="flex justify-center" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
+        <form action="/delete/{{ point.id }}" method="POST" onsubmit="return confirm('この定点を削除しますか？');">
+          <button type="submit" class="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+            <i class="fas fa-trash"></i>
+            <span>削除</span>
+          </button>
+        </form>
       </div>
+      {% endif %}
 
     </div>
   </main>
@@ -167,99 +238,132 @@
     <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
   </a>
 
+  <!-- Lightbox -->
+  <div id="lightbox" class="fixed inset-0 bg-black/95 hidden items-center justify-center z-50" onclick="closeLightbox(event)">
+    <div class="relative max-w-6xl max-h-screen p-4">
+      <img id="lightbox-img" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg">
+      <button onclick="closeLightbox()" class="absolute top-4 right-4 w-12 h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+      <div id="lightbox-caption" class="absolute bottom-4 left-4 text-white text-lg font-bold"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50 transition-all duration-300 transform translate-y-full">
+    <div class="flex items-center gap-3">
+      <i id="toast-icon" class="fas fa-check text-green-400"></i>
+      <span id="toast-message">メッセージ</span>
+    </div>
+  </div>
+
   <script>
-    // Enhanced interactions with error handling
-    document.addEventListener('DOMContentLoaded', function() {
-      try {
-        // Image loading handlers
-        const images = document.querySelectorAll('img[src]');
-        images.forEach(img => {
-          img.addEventListener('load', function() {
-            this.style.opacity = '1';
-          });
-          
-          img.addEventListener('click', function() {
-            try {
-              // Simple lightbox effect
-              const overlay = document.createElement('div');
-              overlay.className = 'fixed inset-0 bg-black/90 flex items-center justify-center z-50';
-              overlay.innerHTML = `
-                <div class="relative max-w-4xl max-h-screen p-4">
-                  <img src="${this.src}" alt="${this.alt}" class="max-w-full max-h-full object-contain rounded-lg">
-                  <button onclick="this.parentElement.parentElement.remove()" class="absolute top-2 right-2 w-10 h-10 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              `;
-              document.body.appendChild(overlay);
-              
-              overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                  overlay.remove();
-                }
-              });
-            } catch (err) {
-              console.warn('Lightbox error:', err);
-            }
-          });
-        });
-
-        // Parallax effect
-        document.addEventListener('mousemove', function(e) {
-          try {
-            const particles = document.querySelectorAll('.particle');
-            if (particles.length > 0) {
-              const mouseX = e.clientX / window.innerWidth;
-              const mouseY = e.clientY / window.innerHeight;
-
-              particles.forEach((particle, index) => {
-                const speed = (index + 1) * 0.3;
-                const x = mouseX * speed * 15;
-                const y = mouseY * speed * 15;
-                if (particle && particle.style) {
-                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
-                }
-              });
-            }
-          } catch (err) {
-            console.warn('Parallax error:', err);
+    // Navigation functionality
+    function goBack() {
+      // Simple and reliable back navigation
+      if (document.referrer && document.referrer !== window.location.href) {
+        // If we came from another page, go back
+        window.history.back();
+        
+        // Fallback in case back doesn't work
+        setTimeout(() => {
+          if (window.location.href === window.location.href) {
+            window.location.href = '/';
           }
-        });
-      } catch (err) {
-        console.error('Script initialization error:', err);
-      }
-    });
-
-    // Point interactions
-    function likePoint() {
-      try {
-        console.log('Point liked');
-        if (navigator.vibrate) {
-          navigator.vibrate([50, 100, 50]);
-        }
-        // Add visual feedback
-        const btn = event.target.closest('button');
-        const icon = btn.querySelector('i');
-        icon.style.color = '#ef4444';
-        setTimeout(() => icon.style.color = '', 2000);
-      } catch (err) {
-        console.error('Like error:', err);
+        }, 300);
+      } else {
+        // If no referrer, go to home
+        window.location.href = '/';
       }
     }
 
-    function bookmarkPoint() {
+    // Like/Bookmark functionality
+    async function toggleLike() {
+      if (!window.currentUser) {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.href);
+        return;
+      }
+
       try {
-        console.log('Point bookmarked');
-        if (navigator.vibrate) {
-          navigator.vibrate(100);
+        const response = await fetch(`/api/like/${window.setupId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          const btn = document.getElementById('like-btn');
+          const icon = btn.querySelector('i');
+          const text = btn.querySelector('span');
+          const countEl = document.getElementById('likes-count');
+          
+          if (data.liked) {
+            btn.className = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-red-500 to-pink-600 text-white';
+            icon.className = 'fas fa-heart';
+            text.textContent = 'いいね済み';
+            countEl.textContent = parseInt(countEl.textContent) + 1;
+            showToast('いいねしました！', 'heart', 'text-red-400');
+          } else {
+            btn.className = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-700 hover:bg-gray-600 text-gray-300';
+            icon.className = 'far fa-heart';
+            text.textContent = 'いいね';
+            countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+            showToast('いいねを解除しました', 'heart-broken', 'text-gray-400');
+          }
+          
+          window.isLiked = data.liked;
+        } else {
+          showToast('エラーが発生しました', 'exclamation-triangle', 'text-red-400');
         }
-        // Add visual feedback
-        const btn = event.target.closest('button');
-        const icon = btn.querySelector('i');
-        icon.classList.toggle('fas');
-        icon.classList.toggle('far');
-      } catch (err) {
-        console.error('Bookmark error:', err);
+      } catch (error) {
+        console.error('Like error:', error);
+        showToast('エラーが発生しました', 'exclamation-triangle', 'text-red-400');
+      }
+    }
+
+    async function toggleBookmark() {
+      if (!window.currentUser) {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.href);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/bookmark/${window.setupId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          const btn = document.getElementById('bookmark-btn');
+          const icon = btn.querySelector('i');
+          const text = btn.querySelector('span');
+          
+          if (data.bookmarked) {
+            btn.className = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-yellow-500 to-orange-600 text-white';
+            icon.className = 'fas fa-bookmark';
+            text.textContent = '保存済み';
+            showToast('保存しました！', 'bookmark', 'text-yellow-400');
+          } else {
+            btn.className = 'inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-700 hover:bg-gray-600 text-gray-300';
+            icon.className = 'far fa-bookmark';
+            text.textContent = '保存';
+            showToast('保存を解除しました', 'bookmark', 'text-gray-400');
+          }
+          
+          window.isBookmarked = data.bookmarked;
+        } else {
+          showToast('エラーが発生しました', 'exclamation-triangle', 'text-red-400');
+        }
+      } catch (error) {
+        console.error('Bookmark error:', error);
+        showToast('エラーが発生しました', 'exclamation-triangle', 'text-red-400');
       }
     }
 
@@ -273,18 +377,100 @@
           });
         } else {
           // Fallback: copy to clipboard
-          navigator.clipboard.writeText(window.location.href);
-          alert('URLをコピーしました');
+          navigator.clipboard.writeText(window.location.href).then(() => {
+            showToast('URLをコピーしました！', 'copy', 'text-blue-400');
+          });
         }
       } catch (err) {
         console.error('Share error:', err);
-        alert('共有に失敗しました');
+        showToast('共有に失敗しました', 'exclamation-triangle', 'text-red-400');
       }
     }
 
-    // Global error handler
-    window.addEventListener('error', function(e) {
-      console.error('Global error:', e.error);
+    // Lightbox functions
+    function openLightbox(src, caption) {
+      const lightbox = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      const captionEl = document.getElementById('lightbox-caption');
+      
+      img.src = src;
+      img.alt = caption;
+      captionEl.textContent = caption;
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(event) {
+      if (event && event.target !== event.currentTarget && !event.target.classList.contains('fa-times')) {
+        return;
+      }
+      
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.add('hidden');
+      lightbox.classList.remove('flex');
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+
+    // Toast notification
+    function showToast(message, iconClass = 'check', iconColor = 'text-green-400') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const messageEl = document.getElementById('toast-message');
+      
+      icon.className = `fas fa-${iconClass} ${iconColor}`;
+      messageEl.textContent = message;
+      
+      toast.classList.remove('hidden', 'translate-y-full');
+      toast.classList.add('translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-full');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 300);
+      }, 3000);
+    }
+
+    // Parallax effect
+    document.addEventListener('mousemove', function(e) {
+      try {
+        const particles = document.querySelectorAll('.particle');
+        if (particles.length > 0) {
+          const mouseX = e.clientX / window.innerWidth;
+          const mouseY = e.clientY / window.innerHeight;
+
+          particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.3;
+            const x = mouseX * speed * 15;
+            const y = mouseY * speed * 15;
+            if (particle && particle.style) {
+              particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Parallax error:', err);
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeLightbox();
+      }
+      if (e.key === 'l' && e.ctrlKey) {
+        e.preventDefault();
+        toggleLike();
+      }
+      if (e.key === 'b' && e.ctrlKey) {
+        e.preventDefault();
+        toggleBookmark();
+      }
     });
   </script>
 </body>
