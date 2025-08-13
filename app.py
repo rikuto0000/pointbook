@@ -135,29 +135,35 @@ def profile():
         # ユーザーの統計情報を取得
         user_id = user['id']
         
-        # いいねした定点数
-        liked_count = supabase.table('likes').select('id', count='exact').eq('user_id', user_id).execute()
-        likes_count = liked_count.count if liked_count.count else 0
+        # いいねした定点数（存在する定点のみカウント）
+        likes_with_setups = supabase.table('likes')\
+            .select('setup_id', count='exact')\
+            .eq('user_id', user_id)\
+            .execute()
+        likes_count = likes_with_setups.count if likes_with_setups.count else 0
         
-        # ブックマークした定点数
-        bookmarked_count = supabase.table('bookmarks').select('id', count='exact').eq('user_id', user_id).execute()
-        bookmarks_count = bookmarked_count.count if bookmarked_count.count else 0
+        # ブックマークした定点数（存在する定点のみカウント）
+        bookmarks_with_setups = supabase.table('bookmarks')\
+            .select('setup_id', count='exact')\
+            .eq('user_id', user_id)\
+            .execute()
+        bookmarks_count = bookmarks_with_setups.count if bookmarks_with_setups.count else 0
         
         # 投稿した定点数（システムユーザー以外）
         posted_count = supabase.table('setups').select('id', count='exact').eq('user_id', user_id).execute()
         posts_count = posted_count.count if posted_count.count else 0
         
-        # 最近いいねした定点（JOINでsetupデータも取得）
-        recent_likes = supabase.table('likes')\
-            .select('*, setups!inner(*)')\
+        # 最近いいねした定点のIDを取得
+        recent_likes_ids = supabase.table('likes')\
+            .select('setup_id')\
             .eq('user_id', user_id)\
             .order('created_at', desc=True)\
             .limit(5)\
             .execute()
         
-        # 最近ブックマークした定点（JOINでsetupデータも取得）
-        recent_bookmarks = supabase.table('bookmarks')\
-            .select('*, setups!inner(*)')\
+        # 最近ブックマークした定点のIDを取得
+        recent_bookmarks_ids = supabase.table('bookmarks')\
+            .select('setup_id')\
             .eq('user_id', user_id)\
             .order('created_at', desc=True)\
             .limit(5)\
@@ -165,24 +171,38 @@ def profile():
         
         # データを整形
         liked_setups = []
-        if recent_likes.data:
-            for like in recent_likes.data:
-                setup = like['setups']
-                setup['id'] = setup.get('legacy_id', setup['id'])
-                setup['stand_image'] = setup.get('stand_image_url', '')
-                setup['point_image'] = setup.get('point_image_url', '')
-                setup['extra_image'] = setup.get('extra_image_url', '')
-                liked_setups.append(setup)
+        if recent_likes_ids.data:
+            for like in recent_likes_ids.data:
+                setup_uuid = like['setup_id']
+                try:
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).single().execute()
+                    if setup_result.data:
+                        setup = setup_result.data
+                        setup['id'] = setup.get('legacy_id', setup['id'])
+                        setup['stand_image'] = setup.get('stand_image_url', '')
+                        setup['point_image'] = setup.get('point_image_url', '')
+                        setup['extra_image'] = setup.get('extra_image_url', '')
+                        liked_setups.append(setup)
+                except Exception as e:
+                    print(f"Error fetching liked setup {setup_uuid}: {str(e)}")
+                    continue
         
         bookmarked_setups = []
-        if recent_bookmarks.data:
-            for bookmark in recent_bookmarks.data:
-                setup = bookmark['setups']
-                setup['id'] = setup.get('legacy_id', setup['id'])
-                setup['stand_image'] = setup.get('stand_image_url', '')
-                setup['point_image'] = setup.get('point_image_url', '')
-                setup['extra_image'] = setup.get('extra_image_url', '')
-                bookmarked_setups.append(setup)
+        if recent_bookmarks_ids.data:
+            for bookmark in recent_bookmarks_ids.data:
+                setup_uuid = bookmark['setup_id']
+                try:
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).single().execute()
+                    if setup_result.data:
+                        setup = setup_result.data
+                        setup['id'] = setup.get('legacy_id', setup['id'])
+                        setup['stand_image'] = setup.get('stand_image_url', '')
+                        setup['point_image'] = setup.get('point_image_url', '')
+                        setup['extra_image'] = setup.get('extra_image_url', '')
+                        bookmarked_setups.append(setup)
+                except Exception as e:
+                    print(f"Error fetching bookmarked setup {setup_uuid}: {str(e)}")
+                    continue
         
         return render_template('profile.html',
                              user=user,
