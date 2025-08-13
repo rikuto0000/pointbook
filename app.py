@@ -98,7 +98,14 @@ def add_point():
             }
 
             result = supabase.table('setups').insert(new_setup).execute()
-            return "登録完了！<br><a href='/add'>もう一度追加する</a>"
+            
+            # 総定点数を取得
+            total_count = supabase.table('setups').select('id', count='exact').execute()
+            total_points = total_count.count if total_count.count else 0
+            
+            return render_template('success.html', 
+                                 total_points=total_points,
+                                 user_points=1)
 
         except Exception as e:
             return f"エラーが発生しました: {str(e)}", 500

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登録完了 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(8) %}
+    <div class="particle" style="left: {{ (i * 12 + 5) }}%; animation-delay: {{ i * 0.6 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+      <i class="fas fa-home"></i>
+      <span>ホームに戻る</span>
+    </a>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-2xl w-full text-center">
+      
+      <!-- Success Animation -->
+      <div class="mb-8" style="animation: fadeInUp 0.8s ease-out;">
+        <div class="w-32 h-32 mx-auto mb-6 relative">
+          <!-- Success Circle with Animation -->
+          <div class="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center relative overflow-hidden">
+            <i class="fas fa-check text-white text-5xl z-10"></i>
+            
+            <!-- Pulse Effect -->
+            <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
+            <div class="absolute inset-2 bg-green-300 rounded-full animate-pulse opacity-30"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Message -->
+      <div class="glass rounded-2xl p-8 mb-8" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+        <h1 class="text-4xl sm:text-5xl font-bold text-glow mb-4">
+          🎉 登録完了！
+        </h1>
+        
+        <p class="text-xl text-gray-300 mb-6">
+          定点が正常にアップロードされました
+        </p>
+
+        <div class="w-32 h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 mx-auto mb-8 rounded"></div>
+        
+        <!-- Success Details -->
+        <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-6 mb-6">
+          <div class="flex items-center justify-center gap-3 mb-4">
+            <i class="fas fa-cloud-upload-alt text-green-400 text-2xl"></i>
+            <span class="text-green-300 font-semibold text-lg">アップロード成功</span>
+          </div>
+          <p class="text-gray-300 text-sm">
+            画像がCloudinaryに保存され、データベースに登録されました。<br>
+            他のプレイヤーがあなたの定点を閲覧できるようになりました。
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/" class="btn-primary inline-flex items-center justify-center gap-2">
+            <i class="fas fa-home"></i>
+            <span>ホームに戻る</span>
+          </a>
+          
+          <a href="/add" class="btn-secondary inline-flex items-center justify-center gap-2">
+            <i class="fas fa-plus"></i>
+            <span>もう一度追加する</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats & Tips -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
+        
+        <!-- Stats Card -->
+        <div class="glass rounded-xl p-6">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fas fa-chart-bar text-blue-400"></i>
+            統計情報
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">総定点数:</span>
+              <span class="text-white font-semibold">{{ total_points or '計算中...' }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">あなたの投稿:</span>
+              <span class="text-green-400 font-semibold">{{ user_points or '1' }}件</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">対応マップ:</span>
+              <span class="text-blue-400 font-semibold">10マップ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Steps Card -->
+        <div class="glass rounded-xl p-6">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fas fa-lightbulb text-yellow-400"></i>
+            次のステップ
+          </h3>
+          <div class="space-y-3 text-sm text-gray-300">
+            <div class="flex items-start gap-2">
+              <i class="fas fa-share text-green-400 mt-1 text-xs"></i>
+              <span>友達にアプリを共有</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <i class="fas fa-star text-yellow-400 mt-1 text-xs"></i>
+              <span>他の定点を評価</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <i class="fas fa-trophy text-purple-400 mt-1 text-xs"></i>
+              <span>ランキング機能（近日公開）</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Social Sharing -->
+      <div class="glass rounded-xl p-6 mt-6" style="animation: fadeInUp 0.8s ease-out 0.6s both;">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center gap-2">
+          <i class="fas fa-share-alt text-pink-400"></i>
+          定点を共有しよう
+        </h3>
+        <div class="flex justify-center gap-4">
+          <button onclick="shareViaWebAPI()" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-share"></i>
+            <span>共有</span>
+          </button>
+          <button onclick="copyToClipboard()" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-copy"></i>
+            <span>URLコピー</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Auto-redirect after 10 seconds (optional)
+        setTimeout(() => {
+          if (confirm('10秒が経過しました。ホームページに戻りますか？')) {
+            window.location.href = '/';
+          }
+        }, 10000);
+
+        // Celebration confetti effect
+        createConfetti();
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.2;
+                const x = mouseX * speed * 8;
+                const y = mouseY * speed * 8;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+
+    // Share functionality
+    function shareViaWebAPI() {
+      try {
+        if (navigator.share) {
+          navigator.share({
+            title: 'VALORANT Pointbook',
+            text: '新しい定点を追加しました！',
+            url: window.location.origin
+          });
+        } else {
+          copyToClipboard();
+        }
+      } catch (err) {
+        console.warn('Share error:', err);
+        copyToClipboard();
+      }
+    }
+
+    function copyToClipboard() {
+      try {
+        const url = window.location.origin;
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('URLをコピーしました！');
+        }).catch(() => {
+          // Fallback
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          showToast('URLをコピーしました！');
+        });
+      } catch (err) {
+        console.warn('Copy error:', err);
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // Confetti animation
+    function createConfetti() {
+      try {
+        const colors = ['#ff4655', '#00ff88', '#0099ff', '#ffaa00', '#ff0099'];
+        
+        for (let i = 0; i < 50; i++) {
+          const confetti = document.createElement('div');
+          confetti.style.cssText = `
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            left: ${Math.random() * 100}%;
+            top: -10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            animation: confetti-fall ${2 + Math.random() * 3}s linear forwards;
+          `;
+          
+          document.body.appendChild(confetti);
+          
+          setTimeout(() => {
+            confetti.remove();
+          }, 5000);
+        }
+      } catch (err) {
+        console.warn('Confetti error:', err);
+      }
+    }
+
+    // Add confetti animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-10px) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>

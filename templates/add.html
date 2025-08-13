@@ -27,112 +27,358 @@
   <!-- ✅ Rajdhani Font -->
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      font-family: 'Rajdhani', sans-serif;
-    }
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
 
-    @keyframes fade-up {
-      0% {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    .animate-fade-up {
-      animation: fade-up 0.6s ease-out forwards;
-    }
-  </style>
+  <!-- Fallback styles -->
+  {% include 'base_styles.html' %}
 </head>
 
-<body class="bg-[#0f1923] text-white min-h-screen p-4">
+<body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(6) %}
+    <div class="particle" style="left: {{ (i * 15 + 10) }}%; animation-delay: {{ i * 0.8 }}s;"></div>
+    {% endfor %}
+  </div>
 
-  <h1 class="text-3xl sm:text-4xl font-bold text-center mb-8 text-[#ff4655] animate-fade-up">
-    定点を追加
-  </h1>
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+      <i class="fas fa-home"></i>
+      <span>ホームに戻る</span>
+    </a>
+  </nav>
 
-  <form action="/add" method="POST" enctype="multipart/form-data"
-        class="bg-[#1c1c1c] p-6 rounded-xl max-w-xl mx-auto space-y-4 shadow-lg animate-fade-up delay-100">
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-6">
+      <i class="fas fa-plus-circle text-3xl text-glow"></i>
+      <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
+        新しい定点を追加
+      </h1>
+    </div>
+    <p class="text-xl text-gray-300 font-medium tracking-wider">あなたのラインナップを共有しましょう</p>
+    <div class="w-32 h-1 bg-gradient-to-r from-purple-500 via-red-500 to-yellow-500 mx-auto mt-4 rounded"></div>
+  </header>
 
-    <input type="text" name="title" placeholder="タイトル" required
-           class="w-full p-3 rounded bg-gray-800 text-white placeholder-gray-400" />
+  <!-- Main Form -->
+  <main class="container mx-auto px-4 pb-8">
+    <div class="max-w-2xl mx-auto">
+      
+      <form action="/add" method="POST" enctype="multipart/form-data" 
+            class="glass rounded-2xl p-8 space-y-6" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+        
+        <!-- Basic Info Section -->
+        <section class="space-y-6">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <i class="fas fa-info-circle text-blue-400"></i>
+            基本情報
+          </h2>
+          
+          <!-- Title -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-tag text-purple-400"></i>
+              タイトル
+            </label>
+            <input type="text" name="title" placeholder="例: MIDリコン定点" required
+                   class="form-input" />
+          </div>
 
-    <textarea name="description" placeholder="説明" required
-              class="w-full p-3 rounded bg-gray-800 text-white placeholder-gray-400"></textarea>
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-align-left text-green-400"></i>
+              説明
+            </label>
+            <textarea name="description" placeholder="例: 1バウンスフルチャージでMIDを索敵" required
+                      class="form-input min-h-[80px] resize-vertical"></textarea>
+          </div>
+        </section>
 
-    <label class="block font-semibold">🗺 マップ</label>
-    <select name="map" required class="w-full p-3 rounded bg-gray-800 text-white">
-      <option value="">選択してください</option>
-      <option value="ascent">アセント</option>
-      <option value="split">スプリット</option>
-      <option value="bind">バインド</option>
-      <option value="haven">ヘイブン</option>
-      <option value="icebox">アイスボックス</option>
-      <option value="breeze">ブリーズ</option>
-      <option value="fracture">フラクチャー</option>
-      <option value="pearl">パール</option>
-      <option value="lotus">ロータス</option>
-      <option value="sunset">サンセット</option>
-    </select>
+        <!-- Map & Agent Section -->
+        <section class="space-y-6">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <i class="fas fa-map text-red-400"></i>
+            マップ・エージェント設定
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Map -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-globe text-blue-400"></i>
+                マップ
+              </label>
+              <select name="map" required class="form-select">
+                <option value="">マップを選択</option>
+                <option value="ascent">🏛️ アセント</option>
+                <option value="split">🏙️ スプリット</option>
+                <option value="bind">🏜️ バインド</option>
+                <option value="haven">🌸 ヘイブン</option>
+                <option value="icebox">❄️ アイスボックス</option>
+                <option value="breeze">🏝️ ブリーズ</option>
+                <option value="fracture">⚡ フラクチャー</option>
+                <option value="pearl">🌊 パール</option>
+                <option value="lotus">🪷 ロータス</option>
+                <option value="sunset">🌅 サンセット</option>
+              </select>
+            </div>
 
-    <label class="block font-semibold mt-2">⚔ サイド</label>
-    <select name="side" required class="w-full p-3 rounded bg-gray-800 text-white">
-      <option value="">選択してください</option>
-      <option value="attack">攻撃</option>
-      <option value="defense">防衛</option>
-    </select>
+            <!-- Side -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-sword text-red-400"></i>
+                サイド
+              </label>
+              <select name="side" required class="form-select">
+                <option value="">サイドを選択</option>
+                <option value="attack">⚔️ 攻撃</option>
+                <option value="defense">🛡️ 防衛</option>
+              </select>
+            </div>
+          </div>
 
-    <label class="block font-semibold mt-2">🧑‍🚀 エージェント</label>
-    <select name="agent" required class="w-full p-3 rounded bg-gray-800 text-white">
-      <option value="">選択してください</option>
-      <option value="brimstone">ブリムストーン</option>
-      <option value="phoenix">フェニックス</option>
-      <option value="sage">セージ</option>
-      <option value="sova">ソーヴァ</option>
-      <option value="viper">ヴァイパー</option>
-      <option value="cypher">サイファー</option>
-      <option value="reyna">レイナ</option>
-      <option value="killjoy">キルジョイ</option>
-      <option value="breach">ブリーチ</option>
-      <option value="omen">オーメン</option>
-      <option value="jett">ジェット</option>
-      <option value="raze">レイズ</option>
-      <option value="skye">スカイ</option>
-      <option value="yoru">ヨル</option>
-      <option value="astra">アストラ</option>
-      <option value="kayo">KAY/O</option>
-      <option value="chamber">チェンバー</option>
-      <option value="neon">ネオン</option>
-      <option value="fade">フェイド</option>
-      <option value="harbor">ハーバー</option>
-      <option value="gekko">ゲッコー</option>
-      <option value="deadlock">デッドロック</option>
-      <option value="clove">クローヴ</option>
-      <option value="iso">アイソ</option>
-      <option value="vyse">ヴァイス</option>
-      <option value="tejo">テホ</option>
-      <option value="waylay">ウェイレイ</option>
-    </select>
+          <!-- Agent -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-user-ninja text-purple-400"></i>
+              エージェント
+            </label>
+            <select name="agent" required class="form-select">
+              <option value="">エージェントを選択</option>
+              <optgroup label="🌪️ コントローラー">
+                <option value="brimstone">ブリムストーン</option>
+                <option value="viper">ヴァイパー</option>
+                <option value="omen">オーメン</option>
+                <option value="astra">アストラ</option>
+                <option value="harbor">ハーバー</option>
+                <option value="clove">クローヴ</option>
+              </optgroup>
+              <optgroup label="👁️ イニシエーター">
+                <option value="sova">ソーヴァ</option>
+                <option value="breach">ブリーチ</option>
+                <option value="skye">スカイ</option>
+                <option value="kayo">KAY/O</option>
+                <option value="fade">フェイド</option>
+                <option value="gekko">ゲッコー</option>
+              </optgroup>
+              <optgroup label="🛡️ センチネル">
+                <option value="sage">セージ</option>
+                <option value="cypher">サイファー</option>
+                <option value="killjoy">キルジョイ</option>
+                <option value="chamber">チェンバー</option>
+                <option value="deadlock">デッドロック</option>
+                <option value="vyse">ヴァイス</option>
+              </optgroup>
+              <optgroup label="⚡ デュエリスト">
+                <option value="phoenix">フェニックス</option>
+                <option value="reyna">レイナ</option>
+                <option value="jett">ジェット</option>
+                <option value="raze">レイズ</option>
+                <option value="yoru">ヨル</option>
+                <option value="neon">ネオン</option>
+                <option value="iso">アイソ</option>
+              </optgroup>
+            </select>
+          </div>
+        </section>
 
-    <label class="block font-semibold mt-4">📍 立ち位置画像</label>
-    <input type="file" name="stand_image" accept="image/*" required class="w-full text-white" />
+        <!-- Images Section -->
+        <section class="space-y-6">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <i class="fas fa-images text-yellow-400"></i>
+            画像アップロード
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Stand Image -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-map-marker-alt text-blue-400"></i>
+                立ち位置画像
+              </label>
+              <div class="file-upload-wrapper">
+                <input type="file" name="stand_image" accept="image/*" required 
+                       class="file-input" id="stand_image" />
+                <label for="stand_image" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+                  <span>立ち位置を選択</span>
+                  <small>クリックして画像を選択</small>
+                </label>
+              </div>
+            </div>
 
-    <label class="block font-semibold mt-4">🎯 定点画像</label>
-    <input type="file" name="point_image" accept="image/*" required class="w-full text-white" />
+            <!-- Point Image -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-crosshairs text-red-400"></i>
+                エイムポイント画像
+              </label>
+              <div class="file-upload-wrapper">
+                <input type="file" name="point_image" accept="image/*" required 
+                       class="file-input" id="point_image" />
+                <label for="point_image" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+                  <span>エイムポイントを選択</span>
+                  <small>クリックして画像を選択</small>
+                </label>
+              </div>
+            </div>
 
-    <label class="block font-semibold mt-4">👁 着弾位置画像</label>
-    <input type="file" name="extra_image" accept="image/*" required class="w-full text-white" />
+            <!-- Extra Image -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-bullseye text-green-400"></i>
+                着弾位置画像
+              </label>
+              <div class="file-upload-wrapper">
+                <input type="file" name="extra_image" accept="image/*" required 
+                       class="file-input" id="extra_image" />
+                <label for="extra_image" class="file-upload-label">
+                  <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+                  <span>着弾位置を選択</span>
+                  <small>クリックして画像を選択</small>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    <button type="submit"
-            class="w-full bg-[#ff4655] hover:bg-[#e13d4b] active:bg-[#c63645]
-                   text-white font-bold py-3 rounded-xl transition transform hover:scale-105 active:scale-95">
-      登録する
-    </button>
-  </form>
+        <!-- Submit Section -->
+        <section class="pt-6 border-t border-gray-600">
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" class="btn-secondary inline-flex items-center justify-center gap-2">
+              <i class="fas fa-arrow-left"></i>
+              <span>キャンセル</span>
+            </a>
+            
+            <button type="submit" class="btn-primary inline-flex items-center justify-center gap-2" id="submit-btn">
+              <i class="fas fa-plus"></i>
+              <span>定点を登録</span>
+            </button>
+          </div>
+        </section>
 
+      </form>
+
+      <!-- Tips Section -->
+      <div class="glass rounded-2xl p-6 mt-8" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
+        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-lightbulb text-yellow-400"></i>
+          投稿のコツ
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
+          <div class="flex items-start gap-2">
+            <i class="fas fa-camera text-blue-400 mt-1"></i>
+            <div>
+              <strong>立ち位置:</strong> キャラクターが見える位置で撮影
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fas fa-target text-red-400 mt-1"></i>
+            <div>
+              <strong>エイム:</strong> クロスヘアの位置が分かるように
+            </div>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fas fa-map-pin text-green-400 mt-1"></i>
+            <div>
+              <strong>着弾:</strong> スキルの効果範囲を示す
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Enhanced form interactions
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // File upload preview
+        const fileInputs = document.querySelectorAll('.file-input');
+        fileInputs.forEach(input => {
+          input.addEventListener('change', function(e) {
+            try {
+              const file = e.target.files[0];
+              const label = document.querySelector(`label[for="${this.id}"]`);
+              
+              if (file && label) {
+                const fileName = file.name.length > 20 ? 
+                  file.name.substring(0, 20) + '...' : file.name;
+                label.querySelector('span').textContent = fileName;
+                label.classList.add('file-selected');
+              }
+            } catch (err) {
+              console.warn('File preview error:', err);
+            }
+          });
+        });
+
+        // Form submission enhancement
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        if (form && submitBtn) {
+          form.addEventListener('submit', function(e) {
+            try {
+              submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>アップロード中...</span>';
+              submitBtn.disabled = true;
+              
+              // Show upload progress (visual feedback)
+              const loadingOverlay = document.createElement('div');
+              loadingOverlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+              loadingOverlay.innerHTML = `
+                <div class="glass rounded-2xl p-8 text-center">
+                  <div class="loading w-12 h-12 border-4 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p class="text-white text-lg">定点をアップロード中...</p>
+                  <p class="text-gray-300 text-sm mt-2">しばらくお待ちください</p>
+                </div>
+              `;
+              document.body.appendChild(loadingOverlay);
+            } catch (err) {
+              console.warn('Submit enhancement error:', err);
+            }
+          });
+        }
+
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = mouseX * speed * 10;
+                const y = mouseY * speed * 10;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
 </body>
 </html>
