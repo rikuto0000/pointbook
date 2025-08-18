@@ -16,11 +16,11 @@
         
         <!-- Main Navigation -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="/" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
+          <a href="/" class="text-white hover:text-red-400 transition-colors flex items-center gap-2">
             <i class="fas fa-home text-sm"></i>
             <span>ホーム</span>
           </a>
-          <a href="/add" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
+          <a href="/add" class="text-white hover:text-red-400 transition-colors flex items-center gap-2">
             <i class="fas fa-plus text-sm"></i>
             <span>投稿</span>
           </a>
@@ -36,8 +36,8 @@
               <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff' }}" 
                    alt="{{ user.username }}" 
                    class="w-8 h-8 rounded-full border-2 border-gray-600">
-              <span class="text-gray-300 hidden sm:block">{{ user.username }}</span>
-              <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+              <span class="text-white hidden sm:block">{{ user.username }}</span>
+              <i class="fas fa-chevron-down text-white text-xs"></i>
             </button>
             
             <!-- Dropdown Menu -->
@@ -46,19 +46,19 @@
                 <p class="text-white font-semibold">{{ user.username }}</p>
               </div>
               <div class="py-2">
-                <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-white hover:text-red-400 hover:bg-gray-700 transition-colors">
                   <i class="fas fa-user text-sm"></i>
                   <span>プロフィール</span>
                 </a>
-                <a href="/profile/posts" class="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <a href="/profile/posts" class="flex items-center gap-3 px-4 py-2 text-white hover:text-red-400 hover:bg-gray-700 transition-colors">
                   <i class="fas fa-map-marker-alt text-sm"></i>
                   <span>投稿した定点</span>
                 </a>
-                <a href="/profile/likes" class="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <a href="/profile/likes" class="flex items-center gap-3 px-4 py-2 text-white hover:text-red-400 hover:bg-gray-700 transition-colors">
                   <i class="fas fa-heart text-sm"></i>
                   <span>いいねした定点</span>
                 </a>
-                <a href="/profile/bookmarks" class="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <a href="/profile/bookmarks" class="flex items-center gap-3 px-4 py-2 text-white hover:text-red-400 hover:bg-gray-700 transition-colors">
                   <i class="fas fa-bookmark text-sm"></i>
                   <span>ブックマーク</span>
                 </a>
@@ -73,7 +73,7 @@
           </div>
         {% else %}
           <!-- Login/Register Buttons -->
-          <a href="/login" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+          <a href="/login" class="px-4 py-2 text-white hover:text-red-400 transition-colors">
             ログイン
           </a>
           <a href="/login" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold">
@@ -82,7 +82,7 @@
         {% endif %}
         
         <!-- Mobile Menu Toggle -->
-        <button class="md:hidden text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+        <button class="md:hidden text-white hover:text-red-400" onclick="toggleMobileMenu()">
           <i class="fas fa-bars text-xl"></i>
         </button>
       </div>
@@ -91,16 +91,16 @@
     <!-- Mobile Navigation Menu -->
     <div id="mobile-menu" class="hidden md:hidden pb-4">
       <div class="flex flex-col gap-2 pt-4 border-t border-gray-700">
-        <a href="/" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
+        <a href="/" class="text-white hover:text-red-400 transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
           <i class="fas fa-home text-sm"></i>
           <span>ホーム</span>
         </a>
-        <a href="/add" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
+        <a href="/add" class="text-white hover:text-red-400 transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
           <i class="fas fa-plus text-sm"></i>
           <span>投稿</span>
         </a>
         {% if user %}
-        <a href="/profile" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
+        <a href="/profile" class="text-white hover:text-red-400 transition-colors flex items-center gap-2 px-4 py-2 hover:bg-gray-800 rounded-lg">
           <i class="fas fa-user text-sm"></i>
           <span>プロフィール</span>
         </a>

@@ -582,9 +582,34 @@ def delete_point(point_id):
 @app.route("/")
 def index():
     try:
-        result = supabase.table('maps').select('*').execute()
-        maps = result.data
         user = get_current_user()
+        
+        # エージェント情報を取得（ロール別にグループ化）
+        agents_result = supabase.table('agents').select('*').execute()
+        all_agents = agents_result.data if agents_result.data else []
+        
+        # ロール別にエージェントを分類
+        agents_by_role = {
+            'controller': [],
+            'initiator': [],
+            'sentinel': [],
+            'duelist': []
+        }
+        
+        for agent in all_agents:
+            role = agent.get('role', 'duelist')
+            if role in agents_by_role:
+                # 各エージェントの総定点数を計算
+                count_result = supabase.table('setups')\
+                    .select('id', count='exact')\
+                    .eq('agent', agent['id'])\
+                    .execute()
+                agent['total_setups'] = count_result.count if count_result.count else 0
+                agents_by_role[role].append(agent)
+        
+        # マップ情報を取得（フィルタリング用）
+        maps_result = supabase.table('maps').select('*').execute()
+        maps = maps_result.data if maps_result.data else []
         
         # 統計情報を取得
         total_points_result = supabase.table('setups').select('id', count='exact').execute()
@@ -593,11 +618,108 @@ def index():
         total_users_result = supabase.table('profiles').select('id', count='exact').execute()
         total_users = total_users_result.count if total_users_result.count else 0
         
+        # 人気の定点を取得（いいね数順）
+        popular_points_result = supabase.table('setups')\
+            .select('*')\
+            .order('likes_count', desc=True)\
+            .limit(6)\
+            .execute()
+        
+        popular_points = []
+        if popular_points_result.data:
+            for point in popular_points_result.data:
+                point['id'] = point.get('legacy_id', point['id'])
+                point['stand_image'] = point.get('stand_image_url', '')
+                point['point_image'] = point.get('point_image_url', '')
+                point['extra_image'] = point.get('extra_image_url', '')
+                popular_points.append(point)
+        
+        # 最新の定点を取得（投稿順）
+        recent_points_result = supabase.table('setups')\
+            .select('*')\
+            .order('created_at', desc=True)\
+            .limit(6)\
+            .execute()
+        
+        recent_points = []
+        if recent_points_result.data:
+            for point in recent_points_result.data:
+                point['id'] = point.get('legacy_id', point['id'])
+                point['stand_image'] = point.get('stand_image_url', '')
+                point['point_image'] = point.get('point_image_url', '')
+                point['extra_image'] = point.get('extra_image_url', '')
+                recent_points.append(point)
+        
         return render_template("index.html", 
-                             maps=maps, 
+                             agents_by_role=agents_by_role,
+                             maps=maps,
                              user=user,
                              total_points=total_points,
-                             total_users=total_users)
+                             total_users=total_users,
+                             popular_points=popular_points,
+                             recent_points=recent_points)
+    except Exception as e:
+        return f"エラーが発生しました: {str(e)}", 500
+
+@app.route("/api/agent/<agent_id>/points")
+def get_agent_points_count(agent_id):
+    try:
+        # クエリパラメータを取得
+        map_filter = request.args.get('map', '')
+        side_filter = request.args.get('side', '')
+        
+        # ベースクエリ
+        query = supabase.table('setups').select('id', count='exact').eq('agent', agent_id)
+        
+        # フィルタを適用
+        if map_filter:
+            query = query.eq('map', map_filter)
+        if side_filter:
+            query = query.eq('side', side_filter)
+            
+        result = query.execute()
+        count = result.count if result.count else 0
+        
+        return jsonify({"count": count})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/agent/<agent_id>")
+def show_agent_points(agent_id):
+    try:
+        user = get_current_user()
+        
+        # エージェント情報を取得
+        agent_result = supabase.table('agents').select('*').eq('id', agent_id).execute()
+        if not agent_result.data:
+            return "エージェントが見つかりません", 404
+        agent = agent_result.data[0]
+        
+        # そのエージェントの全定点を取得
+        points_result = supabase.table('setups')\
+            .select('*')\
+            .eq('agent', agent_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        points = []
+        if points_result.data:
+            for point in points_result.data:
+                point['id'] = point.get('legacy_id', point['id'])
+                point['stand_image'] = point.get('stand_image_url', '')
+                point['point_image'] = point.get('point_image_url', '')
+                point['extra_image'] = point.get('extra_image_url', '')
+                points.append(point)
+        
+        # マップ情報を取得（フィルタリング用）
+        maps_result = supabase.table('maps').select('*').execute()
+        maps = maps_result.data if maps_result.data else []
+        
+        return render_template("agent_points.html", 
+                             agent=agent,
+                             points=points,
+                             maps=maps,
+                             user=user)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 
@@ -629,6 +751,17 @@ def select_agent_by_role(map_id, side, role):
         user = get_current_user()
         result = supabase.table('agents').select('*').eq('role', role).execute()
         agents = result.data
+        
+        # 各エージェントの定点数を取得
+        for agent in agents:
+            count_result = supabase.table('setups')\
+                .select('id', count='exact')\
+                .eq('map', map_id)\
+                .eq('side', side)\
+                .eq('agent', agent['id'])\
+                .execute()
+            agent['setup_count'] = count_result.count if count_result.count else 0
+        
         return render_template("agent.html", map_id=map_id, side=side, role=role, agents=agents, user=user)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500

@@ -47,7 +47,7 @@
 
   <!-- Navigation -->
   <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
-    <a href="/map/{{ map_id }}/side/{{ side }}" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
+    <a href="/map/{{ map_id }}/side/{{ side }}" class="inline-flex items-center gap-2 text-white hover:text-red-400 transition-colors duration-300">
       <i class="fas fa-arrow-left"></i>
       <span>ロール選択に戻る</span>
     </a>
@@ -61,7 +61,7 @@
         エージェント選択
       </h1>
     </div>
-    <p class="text-xl text-gray-300 font-medium tracking-wider">お気に入りのエージェントを選択</p>
+    <p class="text-xl text-white font-medium tracking-wider">お気に入りのエージェントを選択</p>
     <div class="flex items-center justify-center gap-2 mt-4">
       <div class="w-8 h-1 bg-red-500 rounded"></div>
       <div class="w-8 h-1 bg-blue-500 rounded"></div>
@@ -120,17 +120,24 @@
               <h3 class="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300 mb-1">
                 {{ agent.name }}
               </h3>
-              <p class="text-gray-400 text-sm capitalize group-hover:text-gray-300 transition-colors duration-300">
-                {% if agent.role == 'controller' %}
-                  コントローラー
-                {% elif agent.role == 'initiator' %}
-                  イニシエーター
-                {% elif agent.role == 'sentinel' %}
-                  センチネル
-                {% else %}
-                  デュエリスト
-                {% endif %}
-              </p>
+              <div class="flex items-center justify-between">
+                <p class="text-white text-sm capitalize group-hover:text-red-400 transition-colors duration-300">
+                  {% if agent.role == 'controller' %}
+                    コントローラー
+                  {% elif agent.role == 'initiator' %}
+                    イニシエーター
+                  {% elif agent.role == 'sentinel' %}
+                    センチネル
+                  {% else %}
+                    デュエリスト
+                  {% endif %}
+                </p>
+                <div class="flex items-center gap-1 text-xs">
+                  <i class="fas fa-crosshairs text-red-400"></i>
+                  <span class="text-white font-semibold">{{ agent.setup_count }}</span>
+                  <span class="text-white">定点</span>
+                </div>
+              </div>
 
               <!-- Stats Bar (Placeholder) -->
               <div class="flex gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -150,9 +157,9 @@
     <!-- Empty State -->
     {% if not agents %}
       <div class="glass rounded-2xl p-8 text-center max-w-md mx-auto">
-        <i class="fas fa-users text-4xl text-gray-400 mb-4"></i>
+        <i class="fas fa-users text-4xl text-red-400 mb-4"></i>
         <h3 class="text-xl font-bold text-white mb-2">エージェントが見つかりません</h3>
-        <p class="text-gray-300">選択したロールにはまだエージェントがいません</p>
+        <p class="text-white">選択したロールにはまだエージェントがいません</p>
       </div>
     {% endif %}
   </main>

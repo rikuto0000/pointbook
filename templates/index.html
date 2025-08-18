@@ -57,13 +57,13 @@
   <nav class="p-4 flex justify-end" style="animation: slideInRight 0.6s ease-out;">
     <div class="flex items-center gap-4">
       {% if user %}
-        <a href="/profile" class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300" style="pointer-events: auto; z-index: 1000;">
+        <a href="/profile" class="flex items-center gap-2 text-white hover:text-red-400 transition-colors duration-300" style="pointer-events: auto; z-index: 1000;">
           <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff' }}" 
                alt="{{ user.username }}" 
                class="w-8 h-8 rounded-full">
           <span class="hidden sm:inline">{{ user.username }}</span>
         </a>
-        <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
+        <a href="/logout" class="text-white hover:text-red-400 transition-colors">
           <i class="fas fa-sign-out-alt"></i>
         </a>
       {% else %}
@@ -78,45 +78,147 @@
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mt-6 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
     <div class="flex items-center justify-center gap-4 mb-4">
-      <i class="fas fa-map-marked-alt text-3xl text-glow"></i>
+      <i class="fas fa-user-ninja text-3xl text-glow"></i>
       <h1 class="text-4xl sm:text-5xl font-bold text-glow tracking-wide">
         VALORANT
       </h1>
     </div>
-    <p class="text-xl text-gray-300 font-medium tracking-wider">マップを選択してください</p>
+    <p class="text-xl text-white font-medium tracking-wider">エージェントを選択してください</p>
     <div class="w-24 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mt-4 rounded"></div>
   </header>
 
-  <!-- Maps Grid -->
+
+  <!-- Quick Access Sections -->
   <main class="container mx-auto px-4 py-8">
-    <div class="grid-container grid-maps max-w-7xl mx-auto">
-      {% for map in maps %}
+    
+    <!-- Popular Points Section -->
+    {% if popular_points %}
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+          <i class="fas fa-fire text-orange-500"></i>
+          人気の定点
+        </h2>
+        <a href="/popular" class="text-red-400 hover:text-red-300 text-sm transition-colors">
+          すべて見る <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for point in popular_points %}
         <article class="card group" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
-          <a href="/map/{{ map.id }}" class="block">
+          <a href="/point/{{ point.id }}" class="block">
             <div class="relative overflow-hidden rounded-t-2xl">
-              <img src="{{ map.image }}" 
-                   alt="{{ map.name }}" 
-                   class="w-full h-48 sm:h-56 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div class="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
-                <div class="flex items-center gap-2 text-white">
-                  <i class="fas fa-play-circle text-xl"></i>
-                  <span class="font-semibold">プレイ開始</span>
-                </div>
+              <img src="{{ point.stand_image }}" 
+                   alt="{{ point.title }}" 
+                   class="w-full h-40 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700"
+                   onerror="this.src='/static/images/placeholder.jpg'">
+              <div class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                <i class="fas fa-heart"></i> {{ point.likes_count or 0 }}
+              </div>
+              <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {{ point.map }} | {{ point.agent }}
               </div>
             </div>
-            <div class="p-6">
-              <h3 class="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300">
-                {{ map.name }}
+            <div class="p-4">
+              <h3 class="text-lg font-bold text-white group-hover:text-red-400 transition-colors duration-300 truncate">
+                {{ point.title }}
               </h3>
-              <p class="text-gray-400 text-sm mt-2 group-hover:text-gray-300 transition-colors duration-300">
-                定点を確認する
+              <p class="text-white text-sm mt-1 line-clamp-2">
+                {{ point.description }}
               </p>
             </div>
           </a>
         </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+
+    <!-- Agents by Role -->
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+          <i class="fas fa-users text-green-500"></i>
+          エージェントから探す
+        </h2>
+      </div>
+      
+      {% for role, agents in agents_by_role.items() %}
+      {% if agents %}
+      <div class="mb-12">
+        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          {% if role == 'controller' %}
+            <i class="fas fa-cloud text-blue-400"></i>
+            <span>コントローラー</span>
+          {% elif role == 'initiator' %}
+            <i class="fas fa-search text-yellow-400"></i>
+            <span>イニシエーター</span>
+          {% elif role == 'sentinel' %}
+            <i class="fas fa-shield-alt text-green-400"></i>
+            <span>センチネル</span>
+          {% else %}
+            <i class="fas fa-fire text-red-400"></i>
+            <span>デュエリスト</span>
+          {% endif %}
+        </h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {% for agent in agents %}
+          <article class="agent-card card group" data-agent="{{ agent.id }}" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 + 0.6 }}s both;">
+            <a href="/agent/{{ agent.id }}" class="block">
+              <div class="relative overflow-hidden rounded-t-2xl">
+                <img src="{{ agent.image }}" 
+                     alt="{{ agent.name }}" 
+                     class="w-full h-32 sm:h-40 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <!-- Setup Count Badge -->
+                <div class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                  {{ agent.total_setups }} 定点
+                </div>
+                
+                <!-- Role Badge -->
+                <div class="absolute top-2 left-2">
+                  {% if role == 'controller' %}
+                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                      <i class="fas fa-cloud text-white text-xs"></i>
+                    </div>
+                  {% elif role == 'initiator' %}
+                    <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <i class="fas fa-search text-white text-xs"></i>
+                    </div>
+                  {% elif role == 'sentinel' %}
+                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <i class="fas fa-shield-alt text-white text-xs"></i>
+                    </div>
+                  {% else %}
+                    <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                      <i class="fas fa-fire text-white text-xs"></i>
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="absolute bottom-2 left-2 right-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                  <div class="flex items-center justify-center gap-2 text-white bg-black/50 backdrop-blur-sm rounded-lg py-1 px-2">
+                    <i class="fas fa-crosshairs text-xs"></i>
+                    <span class="font-semibold text-xs">定点を確認</span>
+                  </div>
+                </div>
+              </div>
+              <div class="p-3">
+                <h4 class="text-sm font-bold text-white group-hover:text-red-400 transition-colors duration-300 text-center">
+                  {{ agent.name }}
+                </h4>
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
       {% endfor %}
-    </div>
+    </section>
   </main>
 
   <!-- Enhanced FAB -->
@@ -133,11 +235,10 @@
   </div>
 
   <script>
+
     // Enhanced interactions with error handling
     document.addEventListener('DOMContentLoaded', function() {
       try {
-        // Profile link handler removed - using standard HTML links
-        
         // Add click sound effect (optional)
         const cards = document.querySelectorAll('.card');
         if (cards) {
