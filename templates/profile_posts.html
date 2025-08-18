@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>投稿した定点 | {{ user.username }} | VALORANT Pointbook</title>
+
+  <!-- PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Base Styles -->
+  {% include 'base_styles.html' %}
+</head>
+
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(8) %}
+    <div class="particle" style="left: {{ (i * 12 + 10) }}%; animation-delay: {{ i * 0.7 }}s;"></div>
+    {% endfor %}
+  </div>
+
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+        <i class="fas fa-plus text-white text-2xl"></i>
+      </div>
+      <div class="text-left">
+        <h1 class="text-3xl font-bold text-white">投稿した定点</h1>
+        <p class="text-gray-400 text-lg">{{ posts_count }}件の定点</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 pb-8">
+    {% if posted_setups %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {% for setup in posted_setups %}
+        <article class="card group" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.05 }}s both;">
+          <a href="/point/{{ setup.id }}" class="block h-full">
+            <!-- Setup Image -->
+            <div class="relative overflow-hidden rounded-t-2xl">
+              <img src="{{ setup.point_image }}" 
+                   alt="{{ setup.title }}" 
+                   class="w-full h-48 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+              
+              <!-- Gradient Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <!-- Quick Actions -->
+              <div class="absolute bottom-4 left-4 right-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-white bg-black/50 backdrop-blur-sm rounded-lg py-2 px-3">
+                    <i class="fas fa-eye text-xs"></i>
+                    <span class="font-semibold text-sm">詳細を見る</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Setup Info -->
+            <div class="p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-b-2xl flex-1 flex flex-col">
+              <h3 class="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300 line-clamp-2 mb-3">
+                {{ setup.title }}
+              </h3>
+              
+              <p class="text-gray-300 text-sm mb-4 flex-1 line-clamp-3">
+                {{ setup.description }}
+              </p>
+              
+              <!-- Tags and Stats -->
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-1 bg-red-500/20 text-red-300 rounded-full">
+                    {{ setup.side | title }}
+                  </span>
+                  <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                    {{ setup.agent | title }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-3 text-gray-400">
+                  <div class="flex items-center gap-1">
+                    <i class="fas fa-heart text-red-400"></i>
+                    <span>{{ setup.likes_count or 0 }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Edit/Delete Actions -->
+              <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-700">
+                <button class="flex-1 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg transition-colors">
+                  <i class="fas fa-edit mr-2"></i>編集
+                </button>
+                <button onclick="deleteSetup({{ setup.id }})" class="flex-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors">
+                  <i class="fas fa-trash mr-2"></i>削除
+                </button>
+              </div>
+            </div>
+            
+            <!-- Selection Indicator -->
+            <div class="absolute inset-0 border-2 border-transparent group-hover:border-red-500 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Empty State -->
+      <div class="glass rounded-2xl p-12 text-center max-w-2xl mx-auto">
+        <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-plus text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-3">まだ定点を投稿していません</h3>
+        <p class="text-gray-300 mb-6">最初の定点を投稿して、コミュニティに貢献しましょう！</p>
+        <a href="/add" class="btn-primary inline-flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          <span>定点を投稿する</span>
+        </a>
+      </div>
+    {% endif %}
+  </main>
+
+  <script>
+    function deleteSetup(setupId) {
+      if (confirm('この定点を削除してもよろしいですか？')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/delete/${setupId}`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+</body>
+</html>

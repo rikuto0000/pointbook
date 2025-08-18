@@ -28,7 +28,10 @@
   {% include 'base_styles.html' %}
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(8) %}
@@ -36,13 +39,6 @@
     {% endfor %}
   </div>
 
-  <!-- Navigation -->
-  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
-    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-      <i class="fas fa-home"></i>
-      <span>ホームに戻る</span>
-    </a>
-  </nav>
 
   <!-- Main Content -->
   <main class="min-h-screen flex items-center justify-center px-4">

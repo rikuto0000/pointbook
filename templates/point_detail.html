@@ -45,7 +45,10 @@
   </script>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(6) %}
@@ -53,39 +56,6 @@
     {% endfor %}
   </div>
 
-  <!-- Navigation -->
-  <nav class="p-4 flex justify-between items-center" style="animation: slideInLeft 0.6s ease-out;">
-    <div class="flex items-center gap-4">
-      <button onclick="goBack()" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-        <i class="fas fa-arrow-left"></i>
-        <span>戻る</span>
-      </button>
-      <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-        <i class="fas fa-home"></i>
-        <span>ホーム</span>
-      </a>
-    </div>
-    
-    <!-- User Info -->
-    <div class="flex items-center gap-4">
-      {% if user %}
-        <a href="/profile" class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors" style="pointer-events: auto; z-index: 1000;">
-          <img src="{{ user.avatar_url or 'https://ui-avatars.com/api/?name=' + user.username + '&background=ff4655&color=fff' }}" 
-               alt="{{ user.username }}" 
-               class="w-8 h-8 rounded-full">
-          <span class="hidden sm:inline">{{ user.username }}</span>
-        </a>
-        <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
-      {% else %}
-        <a href="/login" class="btn-primary text-sm py-2 px-4">
-          <i class="fas fa-sign-in-alt"></i>
-          <span class="hidden sm:inline">ログイン</span>
-        </a>
-      {% endif %}
-    </div>
-  </nav>
 
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
@@ -108,6 +78,17 @@
         <i class="fas fa-user text-purple-400"></i>
         <span>{{ point.agent }}</span>
       </div>
+      {% if point.skill_type %}
+      <div class="flex items-center gap-2">
+        <img src="/static/images/agents/{{ point.agent }}/{{ point.agent }}_{{ point.skill_type }}.png" 
+             alt="Skill" 
+             class="w-4 h-4 object-cover rounded" 
+             onerror="this.style.display='none'" />
+        <span class="text-yellow-400">
+          {% if point.skill_type == 'skill_1' %}Q スキル{% elif point.skill_type == 'skill_2' %}E スキル{% elif point.skill_type == 'skill_3' %}C スキル{% elif point.skill_type == 'ult' %}X アルティメット{% endif %}
+        </span>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Action Buttons -->
@@ -221,7 +202,7 @@
       <!-- Delete Button (if owner) -->
       {% if user and (user.id == point.user_id or user.id == SYSTEM_USER_ID) %}
       <div class="flex justify-center" style="animation: fadeInUp 0.8s ease-out 0.4s both;">
-        <form action="/delete/{{ point.id }}" method="POST" onsubmit="return confirm('この定点を削除しますか？');">
+        <form action="/delete/{{ point.id }}" method="POST" onsubmit="return confirmDelete();">
           <button type="submit" class="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
             <i class="fas fa-trash"></i>
             <span>削除</span>
@@ -457,6 +438,17 @@
         console.warn('Parallax error:', err);
       }
     });
+
+    // Enhanced delete confirmation
+    function confirmDelete() {
+      const mapName = '{{ point.map }}';
+      const agentName = '{{ point.agent }}';
+      const side = '{{ point.side }}';
+      
+      const message = `この定点を削除しますか？\n\n削除後は「${mapName}」の「${agentName}」定点一覧に戻ります。`;
+      
+      return confirm(message);
+    }
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {

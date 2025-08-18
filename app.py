@@ -72,7 +72,7 @@ def login():
         except Exception as e:
             flash('ユーザー名またはパスワードが正しくありません', 'error')
     
-    return render_template('login.html')
+    return render_template('login.html', user=get_current_user())
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -169,15 +169,23 @@ def profile():
             .limit(5)\
             .execute()
         
+        # 投稿した定点を取得
+        posted_setups_result = supabase.table('setups')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .order('created_at', desc=True)\
+            .limit(10)\
+            .execute()
+        
         # データを整形
         liked_setups = []
         if recent_likes_ids.data:
             for like in recent_likes_ids.data:
                 setup_uuid = like['setup_id']
                 try:
-                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).single().execute()
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).execute()
                     if setup_result.data:
-                        setup = setup_result.data
+                        setup = setup_result.data[0]
                         setup['id'] = setup.get('legacy_id', setup['id'])
                         setup['stand_image'] = setup.get('stand_image_url', '')
                         setup['point_image'] = setup.get('point_image_url', '')
@@ -192,9 +200,9 @@ def profile():
             for bookmark in recent_bookmarks_ids.data:
                 setup_uuid = bookmark['setup_id']
                 try:
-                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).single().execute()
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).execute()
                     if setup_result.data:
-                        setup = setup_result.data
+                        setup = setup_result.data[0]
                         setup['id'] = setup.get('legacy_id', setup['id'])
                         setup['stand_image'] = setup.get('stand_image_url', '')
                         setup['point_image'] = setup.get('point_image_url', '')
@@ -204,13 +212,23 @@ def profile():
                     print(f"Error fetching bookmarked setup {setup_uuid}: {str(e)}")
                     continue
         
+        posted_setups = []
+        if posted_setups_result.data:
+            for setup in posted_setups_result.data:
+                setup['id'] = setup.get('legacy_id', setup['id'])
+                setup['stand_image'] = setup.get('stand_image_url', '')
+                setup['point_image'] = setup.get('point_image_url', '')
+                setup['extra_image'] = setup.get('extra_image_url', '')
+                posted_setups.append(setup)
+        
         return render_template('profile.html',
                              user=user,
                              likes_count=likes_count,
                              bookmarks_count=bookmarks_count,
                              posts_count=posts_count,
                              liked_setups=liked_setups,
-                             bookmarked_setups=bookmarked_setups)
+                             bookmarked_setups=bookmarked_setups,
+                             posted_setups=posted_setups)
                              
     except Exception as e:
         print(f"Profile error: {str(e)}")
@@ -221,7 +239,133 @@ def profile():
                              bookmarks_count=0,
                              posts_count=0,
                              liked_setups=[],
-                             bookmarked_setups=[])
+                             bookmarked_setups=[],
+                             posted_setups=[])
+
+@app.route("/profile/posts")
+def profile_posts():
+    user = get_current_user()
+    
+    if not user:
+        flash('ログインが必要です', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user_id = user['id']
+        
+        # すべての投稿した定点を取得
+        posted_setups_result = supabase.table('setups')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        posted_setups = []
+        if posted_setups_result.data:
+            for setup in posted_setups_result.data:
+                setup['id'] = setup.get('legacy_id', setup['id'])
+                setup['stand_image'] = setup.get('stand_image_url', '')
+                setup['point_image'] = setup.get('point_image_url', '')
+                setup['extra_image'] = setup.get('extra_image_url', '')
+                posted_setups.append(setup)
+        
+        return render_template('profile_posts.html',
+                             user=user,
+                             posted_setups=posted_setups,
+                             posts_count=len(posted_setups))
+                             
+    except Exception as e:
+        print(f"Profile posts error: {str(e)}")
+        flash('エラーが発生しました', 'error')
+        return redirect(url_for('profile'))
+
+@app.route("/profile/likes")
+def profile_likes():
+    user = get_current_user()
+    
+    if not user:
+        flash('ログインが必要です', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user_id = user['id']
+        
+        # すべてのいいねした定点のIDを取得
+        likes_ids = supabase.table('likes')\
+            .select('setup_id')\
+            .eq('user_id', user_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        liked_setups = []
+        if likes_ids.data:
+            for like in likes_ids.data:
+                setup_uuid = like['setup_id']
+                try:
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).execute()
+                    if setup_result.data:
+                        setup = setup_result.data[0]
+                        setup['id'] = setup.get('legacy_id', setup['id'])
+                        setup['stand_image'] = setup.get('stand_image_url', '')
+                        setup['point_image'] = setup.get('point_image_url', '')
+                        setup['extra_image'] = setup.get('extra_image_url', '')
+                        liked_setups.append(setup)
+                except Exception:
+                    continue
+        
+        return render_template('profile_likes.html',
+                             user=user,
+                             liked_setups=liked_setups,
+                             likes_count=len(liked_setups))
+                             
+    except Exception as e:
+        print(f"Profile likes error: {str(e)}")
+        flash('エラーが発生しました', 'error')
+        return redirect(url_for('profile'))
+
+@app.route("/profile/bookmarks")
+def profile_bookmarks():
+    user = get_current_user()
+    
+    if not user:
+        flash('ログインが必要です', 'warning')
+        return redirect(url_for('login'))
+    
+    try:
+        user_id = user['id']
+        
+        # すべてのブックマークした定点のIDを取得
+        bookmarks_ids = supabase.table('bookmarks')\
+            .select('setup_id')\
+            .eq('user_id', user_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        bookmarked_setups = []
+        if bookmarks_ids.data:
+            for bookmark in bookmarks_ids.data:
+                setup_uuid = bookmark['setup_id']
+                try:
+                    setup_result = supabase.table('setups').select('*').eq('id', setup_uuid).execute()
+                    if setup_result.data:
+                        setup = setup_result.data[0]
+                        setup['id'] = setup.get('legacy_id', setup['id'])
+                        setup['stand_image'] = setup.get('stand_image_url', '')
+                        setup['point_image'] = setup.get('point_image_url', '')
+                        setup['extra_image'] = setup.get('extra_image_url', '')
+                        bookmarked_setups.append(setup)
+                except Exception:
+                    continue
+        
+        return render_template('profile_bookmarks.html',
+                             user=user,
+                             bookmarked_setups=bookmarked_setups,
+                             bookmarks_count=len(bookmarked_setups))
+                             
+    except Exception as e:
+        print(f"Profile bookmarks error: {str(e)}")
+        flash('エラーが発生しました', 'error')
+        return redirect(url_for('profile'))
 
 # いいね機能
 @app.route("/api/like/<int:legacy_id>", methods=["POST"])
@@ -233,11 +377,11 @@ def toggle_like(legacy_id):
     
     try:
         # legacy_idから実際のUUID（setup.id）を取得
-        setup_result = supabase.table('setups').select('id').eq('legacy_id', legacy_id).single().execute()
+        setup_result = supabase.table('setups').select('id').eq('legacy_id', legacy_id).execute()
         if not setup_result.data:
             return jsonify({"error": "定点が見つかりません"}), 404
             
-        setup_uuid = setup_result.data['id']
+        setup_uuid = setup_result.data[0]['id']
         
         # 既存のいいねをチェック（UUID使用）
         existing = supabase.table('likes').select('id').eq('user_id', user_id).eq('setup_id', setup_uuid).execute()
@@ -271,11 +415,11 @@ def toggle_bookmark(legacy_id):
     
     try:
         # legacy_idから実際のUUID（setup.id）を取得
-        setup_result = supabase.table('setups').select('id').eq('legacy_id', legacy_id).single().execute()
+        setup_result = supabase.table('setups').select('id').eq('legacy_id', legacy_id).execute()
         if not setup_result.data:
             return jsonify({"error": "定点が見つかりません"}), 404
             
-        setup_uuid = setup_result.data['id']
+        setup_uuid = setup_result.data[0]['id']
         
         # 既存のブックマークをチェック（UUID使用）
         existing = supabase.table('bookmarks').select('id').eq('user_id', user_id).eq('setup_id', setup_uuid).execute()
@@ -299,11 +443,19 @@ def toggle_bookmark(legacy_id):
 @app.route("/add", methods=["GET", "POST"])
 def add_point():
     if request.method == "POST":
+        # 現在のユーザーを取得
+        user = get_current_user()
+        if not user:
+            flash('ログインが必要です', 'warning')
+            return redirect(url_for('login'))
+        
         map_id = request.form["map"]
         side = request.form["side"]
+        site = request.form["site"]
         agent = request.form["agent"]
         title = request.form["title"]
         description = request.form["description"]
+        skill_type = request.form.get("skill_type", "")
 
         # 画像3枚取得
         stand_file = request.files["stand_image"]
@@ -328,12 +480,12 @@ def add_point():
             point_url = point_result["secure_url"]
             extra_url = extra_result["secure_url"]
 
-            # Supabaseに新しいデータを挿入
+            # Supabaseに新しいデータを挿入（現在のユーザーIDを使用）
             new_setup = {
                 "legacy_id": new_legacy_id,
-                "user_id": SYSTEM_USER_ID,
+                "user_id": user['id'],
                 "map": map_id,
-                "site": "A",  # デフォルト値
+                "site": site,
                 "side": side,
                 "agent": agent,
                 "title": title,
@@ -343,6 +495,10 @@ def add_point():
                 "extra_image_url": extra_url,
                 "likes_count": 0
             }
+            
+            # skill_typeカラムが存在する場合のみ追加
+            if skill_type:
+                new_setup["skill_type"] = skill_type
 
             result = supabase.table('setups').insert(new_setup).execute()
             
@@ -352,22 +508,74 @@ def add_point():
             
             return render_template('success.html', 
                                  total_points=total_points,
-                                 user_points=1)
+                                 user_points=1,
+                                 user=user)
 
         except Exception as e:
             return f"エラーが発生しました: {str(e)}", 500
-
-    return render_template("add.html")
+    
+    # GET リクエストの場合もログインチェック
+    user = get_current_user()
+    if not user:
+        flash('ログインが必要です', 'warning')
+        return redirect(url_for('login'))
+    
+    return render_template("add.html", user=user)
 
 
 @app.route("/delete/<int:point_id>", methods=["POST"])
 def delete_point(point_id):
+    # ログインチェック
+    user = get_current_user()
+    if not user:
+        flash('ログインが必要です', 'warning')
+        return redirect(url_for('login'))
+    
     try:
-        # legacy_idで削除
+        # 削除対象の定点を取得して投稿者確認
+        setup_result = supabase.table('setups').select('user_id').eq('legacy_id', point_id).execute()
+        
+        if not setup_result.data:
+            flash('指定された定点が見つかりません', 'error')
+            return redirect(request.referrer or "/")
+        
+        # 投稿者本人または管理者のみ削除可能
+        if setup_result.data[0]['user_id'] != user['id']:
+            flash('この定点を削除する権限がありません', 'error')
+            return redirect(request.referrer or "/")
+        
+        # 削除対象の詳細情報を取得（削除前に）
+        map_id = setup_result.data[0].get('map')
+        side = setup_result.data[0].get('side')
+        agent = setup_result.data[0].get('agent')
+        
+        # 削除実行
         result = supabase.table('setups').delete().eq('legacy_id', point_id).execute()
-        return redirect(request.referrer or "/")
+        
+        # 削除成功メッセージに行き先を含める
+        if map_id and side and agent:
+            flash(f'定点を削除しました。{agent}の定点一覧に移動します。', 'success')
+        else:
+            flash('定点を削除しました', 'success')
+        
+        # 削除後の適切な導線を提供
+        referrer = request.referrer
+        if referrer and '/point/' in referrer:
+            # 定点詳細ページから削除された場合、そのエージェントの定点一覧に戻る
+            if map_id and side and agent:
+                return redirect(f"/map/{map_id}/side/{side}/agent/{agent}")
+            else:
+                return redirect("/")
+        elif referrer and '/profile' in referrer:
+            # プロフィール画面から削除された場合、プロフィールに戻る
+            return redirect("/profile")
+        else:
+            # その他の場合はホームに戻る
+            return redirect("/")
+        
     except Exception as e:
-        return f"エラーが発生しました: {str(e)}", 500
+        flash(f'削除中にエラーが発生しました: {str(e)}', 'error')
+        return redirect(request.referrer or "/")
 
 
 
@@ -377,31 +585,58 @@ def index():
         result = supabase.table('maps').select('*').execute()
         maps = result.data
         user = get_current_user()
-        return render_template("index.html", maps=maps, user=user)
+        
+        # 統計情報を取得
+        total_points_result = supabase.table('setups').select('id', count='exact').execute()
+        total_points = total_points_result.count if total_points_result.count else 0
+        
+        total_users_result = supabase.table('profiles').select('id', count='exact').execute()
+        total_users = total_users_result.count if total_users_result.count else 0
+        
+        return render_template("index.html", 
+                             maps=maps, 
+                             user=user,
+                             total_points=total_points,
+                             total_users=total_users)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 
 @app.route("/map/<map_id>")
 def select_side(map_id):
-    return render_template("map.html", map_id=map_id)
+    user = get_current_user()
+    # 統計情報を取得
+    total_points_result = supabase.table('setups').select('id', count='exact').execute()
+    total_points = total_points_result.count if total_points_result.count else 0
+    
+    total_users_result = supabase.table('profiles').select('id', count='exact').execute()
+    total_users = total_users_result.count if total_users_result.count else 0
+    
+    return render_template("map.html", 
+                         map_id=map_id,
+                         user=user,
+                         total_points=total_points,
+                         total_users=total_users)
 
 @app.route("/map/<map_id>/side/<side>")
 def select_role(map_id, side):
-    return render_template("role.html", map_id=map_id, side=side)
+    user = get_current_user()
+    return render_template("role.html", map_id=map_id, side=side, user=user)
 
 
 @app.route("/map/<map_id>/side/<side>/role/<role>")
 def select_agent_by_role(map_id, side, role):
     try:
+        user = get_current_user()
         result = supabase.table('agents').select('*').eq('role', role).execute()
         agents = result.data
-        return render_template("agent.html", map_id=map_id, side=side, role=role, agents=agents)
+        return render_template("agent.html", map_id=map_id, side=side, role=role, agents=agents, user=user)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 
 @app.route("/map/<map_id>/side/<side>/agent/<agent_id>")
 def show_points_no_role(map_id, side, agent_id):
     try:
+        user = get_current_user()
         result = supabase.table('setups').select('*').eq('map', map_id).eq('side', side).eq('agent', agent_id).execute()
         points = result.data
         
@@ -413,18 +648,19 @@ def show_points_no_role(map_id, side, agent_id):
             point['point_image'] = point.get('point_image_url', '')
             point['extra_image'] = point.get('extra_image_url', '')
         
-        return render_template("points.html", map_id=map_id, side=side, role=None, agent_id=agent_id, points=points)
+        return render_template("points.html", map_id=map_id, side=side, role=None, agent_id=agent_id, points=points, user=user)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 
 @app.route("/point/<int:point_id>")
 def point_detail(point_id):
     try:
-        result = supabase.table('setups').select('*').eq('legacy_id', point_id).single().execute()
-        point = result.data
+        result = supabase.table('setups').select('*').eq('legacy_id', point_id).execute()
         
-        if not point:
+        if not result.data:
             return "定点が見つかりません", 404
+            
+        point = result.data[0]
         
         # legacy形式との互換性のためデータを変換
         point['id'] = point.get('legacy_id', point_id)
@@ -441,8 +677,8 @@ def point_detail(point_id):
         
         if user:
             # legacy_idから実際のUUID（setup.id）を取得
-            setup_uuid_result = supabase.table('setups').select('id').eq('legacy_id', point_id).single().execute()
-            setup_uuid = setup_uuid_result.data['id'] if setup_uuid_result.data else None
+            setup_uuid_result = supabase.table('setups').select('id').eq('legacy_id', point_id).execute()
+            setup_uuid = setup_uuid_result.data[0]['id'] if setup_uuid_result.data else None
             
             if setup_uuid:
                 # いいね状態（UUIDで検索）

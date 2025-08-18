@@ -28,7 +28,10 @@
   {% include 'base_styles.html' %}
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(6) %}

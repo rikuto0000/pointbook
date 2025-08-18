@@ -37,7 +37,10 @@
   {% include 'base_styles.html' %}
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(6) %}
@@ -45,22 +48,6 @@
     {% endfor %}
   </div>
 
-  <!-- Navigation -->
-  <nav class="p-4 flex justify-between items-center" style="animation: slideInLeft 0.6s ease-out;">
-    <div class="flex items-center gap-4">
-      <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-        <i class="fas fa-home"></i>
-        <span>ホーム</span>
-      </a>
-    </div>
-    
-    <div class="flex items-center gap-4">
-      <a href="/logout" class="text-gray-400 hover:text-white transition-colors">
-        <i class="fas fa-sign-out-alt"></i>
-        <span class="hidden sm:inline">ログアウト</span>
-      </a>
-    </div>
-  </nav>
 
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
@@ -233,8 +220,67 @@
       </section>
       {% endif %}
 
+      <!-- Posted Setups -->
+      {% if posted_setups %}
+      <section class="glass rounded-2xl p-6" style="animation: fadeInUp 0.8s ease-out 0.3s both;">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+            <i class="fas fa-plus text-white"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">投稿した定点</h2>
+            <p class="text-gray-400 text-sm">あなたが投稿した定点</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for setup in posted_setups %}
+          <article class="card group">
+            <a href="/point/{{ setup.id }}" class="block">
+              <!-- Setup Image -->
+              <div class="relative overflow-hidden rounded-t-2xl">
+                <img src="{{ setup.point_image }}" 
+                     alt="{{ setup.title }}" 
+                     class="w-full h-32 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              
+              <!-- Setup Info -->
+              <div class="p-4 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-b-2xl">
+                <h3 class="font-bold text-white mb-2 line-clamp-1">{{ setup.title }}</h3>
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 bg-red-500/20 text-red-300 rounded-full">
+                      {{ setup.side | title }}
+                    </span>
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                      {{ setup.agent | title }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1 text-gray-400">
+                    <i class="fas fa-heart text-red-400"></i>
+                    <span>{{ setup.likes_count or 0 }}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% if posts_count > 10 %}
+        <div class="text-center mt-6">
+          <a href="/profile/posts" class="btn-primary inline-flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            <span>すべての投稿 ({{ posts_count }})</span>
+          </a>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
       <!-- Empty State -->
-      {% if (likes_count == 0 and bookmarks_count == 0) or (not liked_setups and not bookmarked_setups) %}
+      {% if (likes_count == 0 and bookmarks_count == 0 and posts_count == 0) or (not liked_setups and not bookmarked_setups and not posted_setups) %}
       <div class="glass rounded-2xl p-12 text-center">
         <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
           <i class="fas fa-user-circle text-3xl text-gray-400"></i>

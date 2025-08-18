@@ -34,7 +34,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(8) %}
@@ -42,20 +45,6 @@
     {% endfor %}
   </div>
 
-  <!-- Navigation -->
-  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
-    {% if role %}
-      <a href="/map/{{ map_id }}/side/{{ side }}/role/{{ role }}" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-        <i class="fas fa-arrow-left"></i>
-        <span>エージェント選択に戻る</span>
-      </a>
-    {% else %}
-      <a href="/map/{{ map_id }}/side/{{ side }}" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-        <i class="fas fa-arrow-left"></i>
-        <span>サイド選択に戻る</span>
-      </a>
-    {% endif %}
-  </nav>
 
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
@@ -82,12 +71,107 @@
     </div>
   </header>
 
+  <!-- Skill Filter Bar -->
+  <div class="container mx-auto px-4 mb-6">
+    <div class="glass rounded-2xl p-4" style="animation: fadeInUp 0.6s ease-out;">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fas fa-magic text-yellow-400"></i>
+          スキルでフィルター
+        </h3>
+        <button onclick="resetFilters()" class="text-xs text-gray-400 hover:text-white transition-colors">
+          <i class="fas fa-undo"></i> リセット
+        </button>
+      </div>
+      <div class="flex justify-center gap-4 mb-4" id="main-skill-filter">
+        <button data-skill="" class="main-skill-filter-btn active group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+          <div class="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center border-2 border-yellow-400/70">
+            <i class="fas fa-layer-group text-white"></i>
+          </div>
+        </button>
+        <button data-skill="skill_1" class="main-skill-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center relative overflow-hidden border-2 border-transparent">
+            <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_1.png" 
+                 alt="Q Skill" 
+                 class="w-full h-full object-cover rounded-lg" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="absolute inset-0 bg-blue-500 flex items-center justify-center text-white font-bold" style="display: none;">Q</div>
+          </div>
+        </button>
+        <button data-skill="skill_2" class="main-skill-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center relative overflow-hidden border-2 border-transparent">
+            <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_2.png" 
+                 alt="E Skill" 
+                 class="w-full h-full object-cover rounded-lg" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="absolute inset-0 bg-green-500 flex items-center justify-center text-white font-bold" style="display: none;">E</div>
+          </div>
+        </button>
+        <button data-skill="skill_3" class="main-skill-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center relative overflow-hidden border-2 border-transparent">
+            <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_3.png" 
+                 alt="C Skill" 
+                 class="w-full h-full object-cover rounded-lg" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="absolute inset-0 bg-purple-500 flex items-center justify-center text-white font-bold" style="display: none;">C</div>
+          </div>
+        </button>
+        <button data-skill="ult" class="main-skill-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+          <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center relative overflow-hidden border-2 border-transparent">
+            <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_ult.png" 
+                 alt="Ultimate" 
+                 class="w-full h-full object-cover rounded-lg" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="absolute inset-0 bg-red-500 flex items-center justify-center text-white font-bold" style="display: none;">X</div>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Site Filter -->
+      <div class="border-t border-gray-600/50 pt-3">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center justify-center gap-2">
+          <i class="fas fa-map-marker-alt text-orange-400"></i>
+          サイト
+        </h4>
+        <div class="flex justify-center gap-3" id="main-site-filter">
+          <button data-site="" class="main-site-filter-btn active group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center border-2 border-orange-400/70">
+              <i class="fas fa-globe text-white font-bold"></i>
+            </div>
+          </button>
+          <button data-site="A" class="main-site-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center border-2 border-transparent">
+              <span class="text-white text-lg font-bold">A</span>
+            </div>
+          </button>
+          <button data-site="B" class="main-site-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center border-2 border-transparent">
+              <span class="text-white text-lg font-bold">B</span>
+            </div>
+          </button>
+          <button data-site="MID" class="main-site-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg flex items-center justify-center border-2 border-transparent">
+              <span class="text-white text-sm font-bold">MID</span>
+            </div>
+          </button>
+          {% if map_id in ['lotus', 'haven'] %}
+          <button data-site="C" class="main-site-filter-btn group p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-300">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center border-2 border-transparent">
+              <span class="text-white text-lg font-bold">C</span>
+            </div>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Points Grid -->
   <main class="container mx-auto px-4 pb-8">
     {% if points %}
       <div class="grid-container grid-points max-w-7xl mx-auto">
         {% for point in points %}
-          <article class="card group relative" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
+          <article class="card group relative" data-skill-type="{{ point.skill_type or '' }}" data-site="{{ point.site or '' }}" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
             <a href="/point/{{ point.id }}" class="block h-full">
               <!-- Point Image -->
               <div class="relative overflow-hidden rounded-t-2xl">
@@ -143,6 +227,17 @@
                 <!-- Tags and Stats -->
                 <div class="flex items-center justify-between text-xs">
                   <div class="flex items-center gap-2">
+                    {% if point.skill_type %}
+                    <div class="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full">
+                      <img src="/static/images/agents/{{ point.agent }}/{{ point.agent }}_{{ point.skill_type }}.png" 
+                           alt="Skill" 
+                           class="w-3 h-3 object-cover rounded" 
+                           onerror="this.style.display='none'" />
+                      <span>
+                        {% if point.skill_type == 'skill_1' %}Q{% elif point.skill_type == 'skill_2' %}E{% elif point.skill_type == 'skill_3' %}C{% elif point.skill_type == 'ult' %}X{% endif %}
+                      </span>
+                    </div>
+                    {% endif %}
                     <span class="px-2 py-1 bg-red-500/20 text-red-300 rounded-full">
                       {{ (side | title) if side else 'Attack' }}
                     </span>
@@ -155,10 +250,6 @@
                       <i class="fas fa-heart"></i>
                       <span>{{ point.likes_count or 0 }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
-                      <i class="fas fa-eye"></i>
-                      <span>{{ loop.index * 23 }}</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -167,8 +258,8 @@
               <div class="absolute inset-0 border-2 border-transparent group-hover:border-red-500 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
             </a>
 
-            <!-- Delete Button (Admin Only) -->
-            {% if True %}  <!-- Replace with admin check -->
+            <!-- Delete Button (Owner Only) -->
+            {% if user and user.id == point.user_id %}
             <button onclick="deletePoint({{ point.id }})" 
                     class="absolute top-3 left-3 w-8 h-8 bg-red-500/0 hover:bg-red-500/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
                     title="削除">
@@ -216,27 +307,126 @@
 
   <!-- Filter Panel (Hidden by default) -->
   <div id="filterPanel" class="fixed inset-x-4 bottom-4 glass rounded-2xl p-6 transform translate-y-full transition-transform duration-300 z-30">
-    <h4 class="font-bold text-white mb-4">フィルター</h4>
-    <div class="grid grid-cols-2 gap-4">
+    <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+      <i class="fas fa-filter"></i>
+      フィルター
+    </h4>
+    
+    <div class="space-y-4">
+      <!-- Skill Filter -->
       <div>
-        <label class="block text-sm text-gray-300 mb-2">並び順</label>
-        <select class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm">
-          <option>新着順</option>
-          <option>人気順</option>
-          <option>名前順</option>
-        </select>
+        <label class="block text-sm text-gray-300 mb-2">
+          <i class="fas fa-magic text-yellow-400"></i>
+          スキル
+        </label>
+        <div class="flex justify-center gap-3 mb-4" id="skill-filter">
+          <button data-skill="" class="skill-filter-btn active group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-yellow-400/50">
+            <div class="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center">
+              <i class="fas fa-layer-group text-white text-sm"></i>
+            </div>
+          </button>
+          <button data-skill="skill_1" class="skill-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+              <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_1.png" 
+                   alt="Q Skill" 
+                   class="w-full h-full object-cover rounded-lg" 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 bg-blue-500 flex items-center justify-center text-white text-sm font-bold" style="display: none;">Q</div>
+            </div>
+          </button>
+          <button data-skill="skill_2" class="skill-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+              <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_2.png" 
+                   alt="E Skill" 
+                   class="w-full h-full object-cover rounded-lg" 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 bg-green-500 flex items-center justify-center text-white text-sm font-bold" style="display: none;">E</div>
+            </div>
+          </button>
+          <button data-skill="skill_3" class="skill-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+              <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_skill_3.png" 
+                   alt="C Skill" 
+                   class="w-full h-full object-cover rounded-lg" 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 bg-purple-500 flex items-center justify-center text-white text-sm font-bold" style="display: none;">C</div>
+            </div>
+          </button>
+          <button data-skill="ult" class="skill-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+              <img src="/static/images/agents/{{ agent_id }}/{{ agent_id }}_ult.png" 
+                   alt="Ultimate" 
+                   class="w-full h-full object-cover rounded-lg" 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="absolute inset-0 bg-red-500 flex items-center justify-center text-white text-sm font-bold" style="display: none;">X</div>
+            </div>
+          </button>
+        </div>
       </div>
+
+      <!-- Site Filter -->
       <div>
-        <label class="block text-sm text-gray-300 mb-2">タイプ</label>
-        <select class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm">
-          <option>すべて</option>
-          <option>リコン</option>
-          <option>グレネード</option>
-          <option>ショックダーツ</option>
-        </select>
+        <label class="block text-sm text-gray-300 mb-2">
+          <i class="fas fa-map-marker-alt text-orange-400"></i>
+          サイト
+        </label>
+        <div class="flex justify-center gap-3 mb-4" id="site-filter">
+          <button data-site="" class="site-filter-btn active group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-orange-400/50">
+            <div class="w-10 h-10 bg-gradient-to-br from-gray-400 to-gray-600 rounded-lg flex items-center justify-center">
+              <i class="fas fa-globe text-white text-sm"></i>
+            </div>
+          </button>
+          <button data-site="A" class="site-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center">
+              <span class="text-white font-bold">A</span>
+            </div>
+          </button>
+          <button data-site="B" class="site-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+              <span class="text-white font-bold">B</span>
+            </div>
+          </button>
+          <button data-site="MID" class="site-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg flex items-center justify-center">
+              <span class="text-white text-xs font-bold">MID</span>
+            </div>
+          </button>
+          {% if map_id in ['lotus', 'haven'] %}
+          <button data-site="C" class="site-filter-btn group p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-all duration-300 border-2 border-transparent">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-lg flex items-center justify-center">
+              <span class="text-white font-bold">C</span>
+            </div>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Other Filters -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">並び順</label>
+          <select id="sort-filter" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm">
+            <option value="newest">新着順</option>
+            <option value="popular">人気順</option>
+            <option value="name">名前順</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">表示件数</label>
+          <select id="limit-filter" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm">
+            <option value="all">すべて</option>
+            <option value="10">10件</option>
+            <option value="20">20件</option>
+            <option value="50">50件</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div class="flex justify-end mt-4">
+
+    <div class="flex justify-between mt-6">
+      <button onclick="resetFilters()" class="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg text-sm transition-colors">
+        リセット
+      </button>
       <button onclick="toggleFilters()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition-colors">
         閉じる
       </button>
@@ -244,46 +434,102 @@
   </div>
 
   <script>
-    // Immediately clear any existing loading overlays
-    (function() {
-      const existingOverlays = document.querySelectorAll('.loading-overlay');
-      existingOverlays.forEach(overlay => overlay.remove());
-    })();
-    
     // Global loading management
     let isNavigating = false;
     
-    // Function to clear all loading overlays
+    // Comprehensive function to clear all loading overlays
     function clearLoadingOverlays() {
-      const loadingOverlays = document.querySelectorAll('.loading-overlay');
-      loadingOverlays.forEach(overlay => {
-        if (overlay && overlay.parentElement) {
-          overlay.remove();
-        }
-      });
-      isNavigating = false;
+      try {
+        // Clear all loading overlays
+        const loadingOverlays = document.querySelectorAll('.loading-overlay, .loading');
+        loadingOverlays.forEach(overlay => {
+          if (overlay && overlay.parentElement) {
+            overlay.remove();
+          }
+        });
+        
+        // Reset navigation state
+        isNavigating = false;
+        
+        // Re-enable all buttons
+        const buttons = document.querySelectorAll('button[disabled]');
+        buttons.forEach(btn => {
+          btn.disabled = false;
+        });
+        
+        console.log('Loading overlays cleared');
+      } catch (error) {
+        console.warn('Error clearing overlays:', error);
+      }
     }
     
-    // Clear loading overlays when page loads
+    // Immediately clear any existing loading overlays on script load
+    clearLoadingOverlays();
+    
+    // Clear loading overlays when page loads or becomes visible
+    window.addEventListener('load', clearLoadingOverlays);
     window.addEventListener('pageshow', function(event) {
-      // Only clear if this is a back/forward navigation
+      clearLoadingOverlays();
+      // Extra clear for back/forward cache
       if (event.persisted) {
+        setTimeout(clearLoadingOverlays, 50);
+        setTimeout(clearLoadingOverlays, 200);
+      }
+    });
+    
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', function(event) {
+      clearLoadingOverlays();
+      setTimeout(clearLoadingOverlays, 50);
+    });
+    
+    // Clear when page becomes visible (mobile browsers, tab switching)
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        clearLoadingOverlays();
         setTimeout(clearLoadingOverlays, 100);
       }
     });
     
-    // Handle browser back button specifically
-    window.addEventListener('popstate', function(event) {
-      setTimeout(clearLoadingOverlays, 200);
+    // Clear on focus (when user returns to tab)
+    window.addEventListener('focus', function() {
+      clearLoadingOverlays();
     });
+    
+    // Emergency cleanup on any user interaction
+    ['click', 'touchstart', 'keydown'].forEach(eventType => {
+      document.addEventListener(eventType, function() {
+        if (document.querySelectorAll('.loading-overlay').length > 0) {
+          clearLoadingOverlays();
+        }
+      }, { once: true, passive: true });
+    });
+
+    // Filter state
+    let currentFilters = {
+      skill: '',
+      site: '',
+      sort: 'newest',
+      limit: 'all'
+    };
 
     // Enhanced interactions
     document.addEventListener('DOMContentLoaded', function() {
-      // Clear any lingering overlays and reset navigation state
+      // Immediately clear any lingering overlays and reset navigation state
+      clearLoadingOverlays();
+      
+      // Additional cleanup with slight delay for cached pages
       setTimeout(() => {
         clearLoadingOverlays();
-        isNavigating = false;
-      }, 50);
+      }, 10);
+      
+      setTimeout(() => {
+        clearLoadingOverlays();
+      }, 100);
+      
+      // Initialize filters
+      initializeFilters();
+      
       const cards = document.querySelectorAll('.card');
       
       cards.forEach((card, index) => {
@@ -319,9 +565,10 @@
               navigator.vibrate(30);
             }
             
-            // シンプルなローディング表示
+            // ローディング表示
             const loading = document.createElement('div');
             loading.className = 'loading-overlay absolute inset-0 bg-black/70 flex items-center justify-center rounded-2xl z-20';
+            loading.setAttribute('data-navigation-loading', 'true');
             loading.innerHTML = `
               <div class="text-center">
                 <div class="loading w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full mx-auto mb-2"></div>
@@ -330,28 +577,20 @@
             `;
             this.appendChild(loading);
             
-            // 直接ページ遷移（短い遅延で確実に遷移）
-            setTimeout(() => {
-              try {
-                window.location.href = url;
-              } catch (error) {
-                console.error('Navigation error:', error);
-                // エラーの場合はローディングを削除
-                if (loading.parentElement) {
-                  loading.remove();
-                }
-                isNavigating = false;
-              }
-            }, 150);
+            // ページ遷移前にunloadイベントをリッスン
+            const handleBeforeUnload = () => {
+              clearLoadingOverlays();
+            };
+            window.addEventListener('beforeunload', handleBeforeUnload, { once: true });
             
-            // フェイルセーフ: 2秒後にローディングを削除
-            setTimeout(() => {
-              if (loading.parentElement) {
-                loading.remove();
-                isNavigating = false;
-              }
-            }, 2000);
-            
+            // 遷移実行
+            try {
+              window.location.href = url;
+            } catch (error) {
+              console.error('Navigation error:', error);
+              clearLoadingOverlays();
+              window.removeEventListener('beforeunload', handleBeforeUnload);
+            }
           }
         });
       });
@@ -396,6 +635,281 @@
           .then(() => location.reload())
           .catch(err => console.error('Delete failed:', err));
       }
+    }
+
+    // Initialize filter functionality
+    function initializeFilters() {
+      // Main skill filter buttons (top section)
+      const mainSkillButtons = document.querySelectorAll('.main-skill-filter-btn');
+      mainSkillButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Update active state for main buttons
+          mainSkillButtons.forEach(b => {
+            b.classList.remove('active');
+            const border = b.querySelector('.w-12');
+            if (border) border.classList.remove('border-yellow-400/70', 'border-blue-400/70', 'border-green-400/70', 'border-purple-400/70', 'border-red-400/70');
+            if (border) border.classList.add('border-transparent');
+          });
+          
+          this.classList.add('active');
+          const border = this.querySelector('.w-12');
+          if (border) {
+            border.classList.remove('border-transparent');
+            if (this.dataset.skill === '') border.classList.add('border-yellow-400/70');
+            else if (this.dataset.skill === 'skill_1') border.classList.add('border-blue-400/70');
+            else if (this.dataset.skill === 'skill_2') border.classList.add('border-green-400/70');
+            else if (this.dataset.skill === 'skill_3') border.classList.add('border-purple-400/70');
+            else if (this.dataset.skill === 'ult') border.classList.add('border-red-400/70');
+          }
+          
+          // Update filter
+          currentFilters.skill = this.dataset.skill;
+          applyFilters();
+          
+          // Sync with panel filter buttons
+          syncFilterButtons();
+        });
+      });
+
+      // Main site filter buttons (top section)
+      const mainSiteButtons = document.querySelectorAll('.main-site-filter-btn');
+      mainSiteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Update active state for main site buttons
+          mainSiteButtons.forEach(b => {
+            b.classList.remove('active');
+            const border = b.querySelector('.w-12');
+            if (border) border.classList.remove('border-orange-400/70', 'border-red-400/70', 'border-blue-400/70', 'border-yellow-400/70', 'border-green-400/70');
+            if (border) border.classList.add('border-transparent');
+          });
+          
+          this.classList.add('active');
+          const border = this.querySelector('.w-12');
+          if (border) {
+            border.classList.remove('border-transparent');
+            if (this.dataset.site === '') border.classList.add('border-orange-400/70');
+            else if (this.dataset.site === 'A') border.classList.add('border-red-400/70');
+            else if (this.dataset.site === 'B') border.classList.add('border-blue-400/70');
+            else if (this.dataset.site === 'MID') border.classList.add('border-yellow-400/70');
+            else if (this.dataset.site === 'C') border.classList.add('border-green-400/70');
+          }
+          
+          // Update filter
+          currentFilters.site = this.dataset.site;
+          applyFilters();
+          
+          // Sync with panel filter buttons
+          syncFilterButtons();
+        });
+      });
+
+      // Panel skill filter buttons
+      const skillButtons = document.querySelectorAll('.skill-filter-btn');
+      skillButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Update active state
+          skillButtons.forEach(b => b.classList.remove('active', 'border-yellow-400', 'bg-yellow-400/20'));
+          this.classList.add('active', 'border-yellow-400', 'bg-yellow-400/20');
+          
+          // Update filter
+          currentFilters.skill = this.dataset.skill;
+          applyFilters();
+          
+          // Sync with main filter buttons
+          syncFilterButtons();
+        });
+      });
+
+      // Panel site filter buttons
+      const siteButtons = document.querySelectorAll('.site-filter-btn');
+      siteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Update active state
+          siteButtons.forEach(b => b.classList.remove('active', 'border-orange-400', 'bg-orange-400/20'));
+          this.classList.add('active', 'border-orange-400', 'bg-orange-400/20');
+          
+          // Update filter
+          currentFilters.site = this.dataset.site;
+          applyFilters();
+          
+          // Sync with main filter buttons
+          syncFilterButtons();
+        });
+      });
+
+      // Sort filter
+      const sortSelect = document.getElementById('sort-filter');
+      if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+          currentFilters.sort = this.value;
+          applyFilters();
+        });
+      }
+
+      // Limit filter
+      const limitSelect = document.getElementById('limit-filter');
+      if (limitSelect) {
+        limitSelect.addEventListener('change', function() {
+          currentFilters.limit = this.value;
+          applyFilters();
+        });
+      }
+    }
+
+    // Apply filters to points
+    function applyFilters() {
+      const allCards = document.querySelectorAll('.card');
+      let visibleCards = Array.from(allCards);
+
+      // Filter by skill if specified
+      if (currentFilters.skill) {
+        visibleCards = visibleCards.filter(card => {
+          const skillType = card.dataset.skillType || '';
+          return skillType === currentFilters.skill;
+        });
+      }
+
+      // Filter by site if specified
+      if (currentFilters.site) {
+        visibleCards = visibleCards.filter(card => {
+          const siteType = card.dataset.site || '';
+          return siteType === currentFilters.site;
+        });
+      }
+
+      // Sort cards
+      if (currentFilters.sort === 'popular') {
+        visibleCards.sort((a, b) => {
+          const likesA = parseInt(a.querySelector('.fa-heart')?.nextElementSibling?.textContent || '0');
+          const likesB = parseInt(b.querySelector('.fa-heart')?.nextElementSibling?.textContent || '0');
+          return likesB - likesA;
+        });
+      } else if (currentFilters.sort === 'name') {
+        visibleCards.sort((a, b) => {
+          const titleA = a.querySelector('h3')?.textContent || '';
+          const titleB = b.querySelector('h3')?.textContent || '';
+          return titleA.localeCompare(titleB);
+        });
+      }
+
+      // Apply limit
+      if (currentFilters.limit !== 'all') {
+        const limit = parseInt(currentFilters.limit);
+        visibleCards = visibleCards.slice(0, limit);
+      }
+
+      // Hide all cards first
+      allCards.forEach(card => {
+        card.style.display = 'none';
+        card.style.order = '999';
+      });
+
+      // Show and reorder visible cards
+      visibleCards.forEach((card, index) => {
+        card.style.display = 'block';
+        card.style.order = index.toString();
+        
+        // Re-apply animation with delay
+        card.style.animation = `fadeInUp 0.8s ease-out ${index * 0.1}s both`;
+      });
+
+      // Update results count
+      updateResultsCount(visibleCards.length, allCards.length);
+    }
+
+    // Update results count display
+    function updateResultsCount(visible, total) {
+      const statsElement = document.querySelector('.flex.items-center.gap-6 .flex.items-center.gap-2 span');
+      if (statsElement) {
+        statsElement.textContent = `${visible} / ${total} 個の定点`;
+      }
+    }
+
+    // Sync filter buttons between main and panel
+    function syncFilterButtons() {
+      const currentSkill = currentFilters.skill;
+      const currentSite = currentFilters.site;
+      
+      // Update main skill buttons
+      const mainButtons = document.querySelectorAll('.main-skill-filter-btn');
+      mainButtons.forEach(btn => {
+        btn.classList.remove('active');
+        const border = btn.querySelector('.w-12');
+        if (border) border.classList.remove('border-yellow-400/70', 'border-blue-400/70', 'border-green-400/70', 'border-purple-400/70', 'border-red-400/70');
+        if (border) border.classList.add('border-transparent');
+        
+        if (btn.dataset.skill === currentSkill) {
+          btn.classList.add('active');
+          if (border) {
+            border.classList.remove('border-transparent');
+            if (currentSkill === '') border.classList.add('border-yellow-400/70');
+            else if (currentSkill === 'skill_1') border.classList.add('border-blue-400/70');
+            else if (currentSkill === 'skill_2') border.classList.add('border-green-400/70');
+            else if (currentSkill === 'skill_3') border.classList.add('border-purple-400/70');
+            else if (currentSkill === 'ult') border.classList.add('border-red-400/70');
+          }
+        }
+      });
+      
+      // Update main site buttons
+      const mainSiteButtons = document.querySelectorAll('.main-site-filter-btn');
+      mainSiteButtons.forEach(btn => {
+        btn.classList.remove('active');
+        const border = btn.querySelector('.w-12');
+        if (border) border.classList.remove('border-orange-400/70', 'border-red-400/70', 'border-blue-400/70', 'border-yellow-400/70', 'border-green-400/70');
+        if (border) border.classList.add('border-transparent');
+        
+        if (btn.dataset.site === currentSite) {
+          btn.classList.add('active');
+          if (border) {
+            border.classList.remove('border-transparent');
+            if (currentSite === '') border.classList.add('border-orange-400/70');
+            else if (currentSite === 'A') border.classList.add('border-red-400/70');
+            else if (currentSite === 'B') border.classList.add('border-blue-400/70');
+            else if (currentSite === 'MID') border.classList.add('border-yellow-400/70');
+            else if (currentSite === 'C') border.classList.add('border-green-400/70');
+          }
+        }
+      });
+      
+      // Update panel skill buttons
+      const panelButtons = document.querySelectorAll('.skill-filter-btn');
+      panelButtons.forEach(btn => {
+        btn.classList.remove('active', 'border-yellow-400', 'bg-yellow-400/20');
+        if (btn.dataset.skill === currentSkill) {
+          btn.classList.add('active', 'border-yellow-400', 'bg-yellow-400/20');
+        }
+      });
+      
+      // Update panel site buttons
+      const panelSiteButtons = document.querySelectorAll('.site-filter-btn');
+      panelSiteButtons.forEach(btn => {
+        btn.classList.remove('active', 'border-orange-400', 'bg-orange-400/20');
+        if (btn.dataset.site === currentSite) {
+          btn.classList.add('active', 'border-orange-400', 'bg-orange-400/20');
+        }
+      });
+    }
+
+    // Reset all filters
+    function resetFilters() {
+      currentFilters = {
+        skill: '',
+        site: '',
+        sort: 'newest',
+        limit: 'all'
+      };
+
+      // Reset select elements
+      const sortSelect = document.getElementById('sort-filter');
+      if (sortSelect) sortSelect.value = 'newest';
+      
+      const limitSelect = document.getElementById('limit-filter');
+      if (limitSelect) limitSelect.value = 'all';
+
+      // Sync both button sets
+      syncFilterButtons();
+      applyFilters();
     }
 
     // Filter panel

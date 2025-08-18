@@ -35,9 +35,26 @@
 
   <!-- Fallback styles -->
   {% include 'base_styles.html' %}
+  
+  <style>
+    .skill-option {
+      transition: all 0.3s ease;
+    }
+    .skill-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 196, 0, 0.3);
+    }
+    .skill-option.selected {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 196, 0, 0.5);
+    }
+  </style>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
   <!-- Animated Background Particles -->
   <div class="particles">
     {% for i in range(6) %}
@@ -45,13 +62,6 @@
     {% endfor %}
   </div>
 
-  <!-- Navigation -->
-  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
-    <a href="/" class="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300">
-      <i class="fas fa-home"></i>
-      <span>ホームに戻る</span>
-    </a>
-  </nav>
 
   <!-- Header -->
   <header class="glass rounded-2xl mx-4 mb-8 p-8 text-center" style="animation: fadeInUp 0.8s ease-out;">
@@ -107,14 +117,14 @@
             マップ・エージェント設定
           </h2>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Map -->
             <div class="form-group">
               <label class="form-label">
                 <i class="fas fa-globe text-blue-400"></i>
                 マップ
               </label>
-              <select name="map" required class="form-select">
+              <select name="map" required class="form-select" id="map-select">
                 <option value="">マップを選択</option>
                 <option value="abyss">🕳️ アビス</option>
                 <option value="ascent">🏛️ アセント</option>
@@ -128,6 +138,17 @@
                 <option value="pearl">🌊 パール</option>
                 <option value="split">🏙️ スプリット</option>
                 <option value="sunset">🌅 サンセット</option>
+              </select>
+            </div>
+
+            <!-- Site -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-map-marker-alt text-orange-400"></i>
+                サイト
+              </label>
+              <select name="site" required class="form-select" id="site-select" disabled>
+                <option value="">まずマップを選択</option>
               </select>
             </div>
 
@@ -168,6 +189,7 @@
                 <option value="kayo">KAY/O</option>
                 <option value="fade">フェイド</option>
                 <option value="gekko">ゲッコー</option>
+                <option value="tejo">テホ</option>
               </optgroup>
               <optgroup label="🛡️ センチネル">
                 <option value="sage">セージ</option>
@@ -185,8 +207,21 @@
                 <option value="yoru">ヨル</option>
                 <option value="neon">ネオン</option>
                 <option value="iso">アイソ</option>
+                <option value="waylay">ウェイレイ</option>
               </optgroup>
             </select>
+          </div>
+
+          <!-- Skill -->
+          <div class="form-group" id="skill-section" style="display: none;">
+            <label class="form-label">
+              <i class="fas fa-magic text-yellow-400"></i>
+              スキル
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="skill-selector">
+              <!-- スキル選択肢がJavaScriptで動的に追加される -->
+            </div>
+            <input type="hidden" name="skill_type" id="selected-skill" />
           </div>
         </section>
 
@@ -300,9 +335,126 @@
   </main>
 
   <script>
+    // Skill data mapping
+    const skillData = {
+      'skill_1': { name: 'スキル1 (Q)', key: 'Q' },
+      'skill_2': { name: 'スキル2 (E)', key: 'E' },
+      'skill_3': { name: 'スキル3 (C)', key: 'C' },
+      'ult': { name: 'アルティメット (X)', key: 'X' }
+    };
+
+    // Map-specific site options
+    const siteOptions = {
+      'abyss': ['A', 'B', 'MID'],
+      'ascent': ['A', 'B', 'MID'],
+      'bind': ['A', 'B', 'MID'],
+      'breeze': ['A', 'B', 'MID'],
+      'corrode': ['A', 'B', 'MID'],
+      'fracture': ['A', 'B', 'MID'],
+      'haven': ['A', 'B', 'C', 'MID'],
+      'icebox': ['A', 'B', 'MID'],
+      'lotus': ['A', 'B', 'C', 'MID'],
+      'pearl': ['A', 'B', 'MID'],
+      'split': ['A', 'B', 'MID'],
+      'sunset': ['A', 'B', 'MID']
+    };
+
     // Enhanced form interactions
     document.addEventListener('DOMContentLoaded', function() {
       try {
+        // Map selection handler
+        const mapSelect = document.getElementById('map-select');
+        const siteSelect = document.getElementById('site-select');
+        
+        if (mapSelect && siteSelect) {
+          mapSelect.addEventListener('change', function() {
+            const selectedMap = this.value;
+            
+            // Clear previous options
+            siteSelect.innerHTML = '<option value="">サイトを選択</option>';
+            
+            if (selectedMap && siteOptions[selectedMap]) {
+              // Add site options based on selected map
+              siteOptions[selectedMap].forEach(site => {
+                const option = document.createElement('option');
+                option.value = site;
+                
+                // Add site icons/colors
+                if (site === 'A') option.textContent = '🔴 A サイト';
+                else if (site === 'B') option.textContent = '🔵 B サイト';
+                else if (site === 'C') option.textContent = '🟢 C サイト';
+                else if (site === 'MID') option.textContent = '🟡 MID';
+                else option.textContent = site;
+                
+                siteSelect.appendChild(option);
+              });
+              
+              siteSelect.disabled = false;
+            } else {
+              siteSelect.innerHTML = '<option value="">まずマップを選択</option>';
+              siteSelect.disabled = true;
+            }
+          });
+        }
+
+        // Agent selection handler
+        const agentSelect = document.querySelector('select[name="agent"]');
+        const skillSection = document.getElementById('skill-section');
+        const skillSelector = document.getElementById('skill-selector');
+        
+        if (agentSelect && skillSection && skillSelector) {
+          agentSelect.addEventListener('change', function() {
+            const selectedAgent = this.value;
+            
+            if (selectedAgent) {
+              // Show skill section
+              skillSection.style.display = 'block';
+              
+              // Clear previous skills
+              skillSelector.innerHTML = '';
+              
+              // Add skill options
+              Object.entries(skillData).forEach(([skillId, skillInfo]) => {
+                const skillOption = document.createElement('div');
+                skillOption.className = 'skill-option cursor-pointer relative overflow-hidden rounded-lg border-2 border-gray-600 hover:border-yellow-400 transition-all duration-300';
+                skillOption.dataset.skill = skillId;
+                
+                skillOption.innerHTML = `
+                  <div class="aspect-square relative">
+                    <img src="/static/images/agents/${selectedAgent}/${selectedAgent}_${skillId}.png" 
+                         alt="${skillInfo.name}" 
+                         class="w-full h-full object-cover" 
+                         onerror="this.src='/static/images/agents/${selectedAgent}.jpg'" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-2 left-2 right-2 text-white">
+                      <div class="text-xs font-bold">${skillInfo.key}</div>
+                      <div class="text-xs opacity-90">${skillInfo.name}</div>
+                    </div>
+                  </div>
+                `;
+                
+                skillOption.addEventListener('click', function() {
+                  // Remove previous selection
+                  skillSelector.querySelectorAll('.skill-option').forEach(opt => {
+                    opt.classList.remove('border-yellow-400', 'bg-yellow-400/20');
+                    opt.classList.add('border-gray-600');
+                  });
+                  
+                  // Add selection to clicked option
+                  this.classList.remove('border-gray-600');
+                  this.classList.add('border-yellow-400', 'bg-yellow-400/20');
+                  
+                  // Set hidden input value
+                  document.getElementById('selected-skill').value = skillId;
+                });
+                
+                skillSelector.appendChild(skillOption);
+              });
+            } else {
+              skillSection.style.display = 'none';
+            }
+          });
+        }
         // File upload preview
         const fileInputs = document.querySelectorAll('.file-input');
         fileInputs.forEach(input => {
