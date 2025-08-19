@@ -584,32 +584,17 @@ def index():
     try:
         user = get_current_user()
         
-        # エージェント情報を取得（ロール別にグループ化）
-        agents_result = supabase.table('agents').select('*').execute()
-        all_agents = agents_result.data if agents_result.data else []
-        
-        # ロール別にエージェントを分類
-        agents_by_role = {
-            'controller': [],
-            'initiator': [],
-            'sentinel': [],
-            'duelist': []
-        }
-        
-        for agent in all_agents:
-            role = agent.get('role', 'duelist')
-            if role in agents_by_role:
-                # 各エージェントの総定点数を計算
-                count_result = supabase.table('setups')\
-                    .select('id', count='exact')\
-                    .eq('agent', agent['id'])\
-                    .execute()
-                agent['total_setups'] = count_result.count if count_result.count else 0
-                agents_by_role[role].append(agent)
-        
-        # マップ情報を取得（フィルタリング用）
+        # マップ情報を取得
         maps_result = supabase.table('maps').select('*').execute()
         maps = maps_result.data if maps_result.data else []
+        
+        # 各マップの定点数を計算
+        for map_data in maps:
+            count_result = supabase.table('setups')\
+                .select('id', count='exact')\
+                .eq('map', map_data['id'])\
+                .execute()
+            map_data['total_setups'] = count_result.count if count_result.count else 0
         
         # 統計情報を取得
         total_points_result = supabase.table('setups').select('id', count='exact').execute()
@@ -618,46 +603,11 @@ def index():
         total_users_result = supabase.table('profiles').select('id', count='exact').execute()
         total_users = total_users_result.count if total_users_result.count else 0
         
-        # 人気の定点を取得（いいね数順）
-        popular_points_result = supabase.table('setups')\
-            .select('*')\
-            .order('likes_count', desc=True)\
-            .limit(6)\
-            .execute()
-        
-        popular_points = []
-        if popular_points_result.data:
-            for point in popular_points_result.data:
-                point['id'] = point.get('legacy_id', point['id'])
-                point['stand_image'] = point.get('stand_image_url', '')
-                point['point_image'] = point.get('point_image_url', '')
-                point['extra_image'] = point.get('extra_image_url', '')
-                popular_points.append(point)
-        
-        # 最新の定点を取得（投稿順）
-        recent_points_result = supabase.table('setups')\
-            .select('*')\
-            .order('created_at', desc=True)\
-            .limit(6)\
-            .execute()
-        
-        recent_points = []
-        if recent_points_result.data:
-            for point in recent_points_result.data:
-                point['id'] = point.get('legacy_id', point['id'])
-                point['stand_image'] = point.get('stand_image_url', '')
-                point['point_image'] = point.get('point_image_url', '')
-                point['extra_image'] = point.get('extra_image_url', '')
-                recent_points.append(point)
-        
         return render_template("index.html", 
-                             agents_by_role=agents_by_role,
                              maps=maps,
                              user=user,
                              total_points=total_points,
-                             total_users=total_users,
-                             popular_points=popular_points,
-                             recent_points=recent_points)
+                             total_users=total_users)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 
@@ -724,20 +674,46 @@ def show_agent_points(agent_id):
         return f"エラーが発生しました: {str(e)}", 500
 
 @app.route("/map/<map_id>")
-def select_side(map_id):
-    user = get_current_user()
-    # 統計情報を取得
-    total_points_result = supabase.table('setups').select('id', count='exact').execute()
-    total_points = total_points_result.count if total_points_result.count else 0
-    
-    total_users_result = supabase.table('profiles').select('id', count='exact').execute()
-    total_users = total_users_result.count if total_users_result.count else 0
-    
-    return render_template("map.html", 
-                         map_id=map_id,
-                         user=user,
-                         total_points=total_points,
-                         total_users=total_users)
+def select_agent_for_map(map_id):
+    try:
+        user = get_current_user()
+        
+        # マップ情報を取得
+        map_result = supabase.table('maps').select('*').eq('id', map_id).execute()
+        if not map_result.data:
+            return "マップが見つかりません", 404
+        map_info = map_result.data[0]
+        
+        # エージェント情報を取得（ロール別にグループ化）
+        agents_result = supabase.table('agents').select('*').execute()
+        all_agents = agents_result.data if agents_result.data else []
+        
+        # ロール別にエージェントを分類し、このマップでの定点数を計算
+        agents_by_role = {
+            'controller': [],
+            'initiator': [],
+            'sentinel': [],
+            'duelist': []
+        }
+        
+        for agent in all_agents:
+            role = agent.get('role', 'duelist')
+            if role in agents_by_role:
+                # 各エージェントのこのマップでの定点数を計算
+                count_result = supabase.table('setups')\
+                    .select('id', count='exact')\
+                    .eq('agent', agent['id'])\
+                    .eq('map', map_id)\
+                    .execute()
+                agent['map_setups'] = count_result.count if count_result.count else 0
+                agents_by_role[role].append(agent)
+        
+        return render_template("map_agents.html", 
+                             map_info=map_info,
+                             agents_by_role=agents_by_role,
+                             user=user)
+    except Exception as e:
+        return f"エラーが発生しました: {str(e)}", 500
 
 @app.route("/map/<map_id>/side/<side>")
 def select_role(map_id, side):
@@ -763,6 +739,48 @@ def select_agent_by_role(map_id, side, role):
             agent['setup_count'] = count_result.count if count_result.count else 0
         
         return render_template("agent.html", map_id=map_id, side=side, role=role, agents=agents, user=user)
+    except Exception as e:
+        return f"エラーが発生しました: {str(e)}", 500
+
+@app.route("/map/<map_id>/agent/<agent_id>")
+def show_map_agent_points(map_id, agent_id):
+    try:
+        user = get_current_user()
+        
+        # マップ情報を取得
+        map_result = supabase.table('maps').select('*').eq('id', map_id).execute()
+        if not map_result.data:
+            return "マップが見つかりません", 404
+        map_info = map_result.data[0]
+        
+        # エージェント情報を取得
+        agent_result = supabase.table('agents').select('*').eq('id', agent_id).execute()
+        if not agent_result.data:
+            return "エージェントが見つかりません", 404
+        agent = agent_result.data[0]
+        
+        # そのマップ＋エージェントの全定点を取得
+        points_result = supabase.table('setups')\
+            .select('*')\
+            .eq('map', map_id)\
+            .eq('agent', agent_id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        points = []
+        if points_result.data:
+            for point in points_result.data:
+                point['id'] = point.get('legacy_id', point['id'])
+                point['stand_image'] = point.get('stand_image_url', '')
+                point['point_image'] = point.get('point_image_url', '')
+                point['extra_image'] = point.get('extra_image_url', '')
+                points.append(point)
+        
+        return render_template("map_agent_points.html", 
+                             map_info=map_info,
+                             agent=agent,
+                             points=points,
+                             user=user)
     except Exception as e:
         return f"エラーが発生しました: {str(e)}", 500
 

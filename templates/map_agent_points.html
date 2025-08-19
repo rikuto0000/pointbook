@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ map_info.name }} - {{ agent.name }}の定点一覧 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(8) %}
+    <div class="particle" style="left: {{ (i * 12 + 10) }}%; animation-delay: {{ i * 0.7 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/map/{{ map_info.id }}" class="inline-flex items-center gap-2 text-white hover:text-red-400 transition-colors duration-300">
+      <i class="fas fa-arrow-left"></i>
+      <span>エージェント選択に戻る</span>
+    </a>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <img src="{{ map_info.image }}" 
+           alt="{{ map_info.name }}" 
+           class="w-12 h-12 rounded border-2 border-blue-500">
+      <i class="fas fa-times text-gray-400"></i>
+      <img src="{{ agent.image }}" 
+           alt="{{ agent.name }}" 
+           class="w-12 h-12 rounded border-2 border-red-500">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-glow">
+          {{ map_info.name }} × {{ agent.name }}
+        </h1>
+        <p class="text-white">
+          {% if agent.role == 'controller' %}
+            コントローラー
+          {% elif agent.role == 'initiator' %}
+            イニシエーター
+          {% elif agent.role == 'sentinel' %}
+            センチネル
+          {% else %}
+            デュエリスト
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="flex items-center justify-center gap-6 mt-4 text-sm">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-crosshairs text-red-400"></i>
+        <span id="points-count">{{ points|length }}</span> 個の定点
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Section -->
+  <div class="container mx-auto px-4 mb-6">
+    <div class="glass rounded-2xl p-6" style="animation: fadeInUp 0.8s ease-out 0.2s both;">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <i class="fas fa-filter text-blue-400"></i>
+        フィルター
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Side Filter -->
+        <div>
+          <label class="block text-white text-sm font-semibold mb-3">攻守</label>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="filterBySide('')" class="filter-btn side-filter-btn active" data-side="">
+              すべて
+            </button>
+            <button onclick="filterBySide('attack')" class="filter-btn side-filter-btn" data-side="attack">
+              攻撃
+            </button>
+            <button onclick="filterBySide('defense')" class="filter-btn side-filter-btn" data-side="defense">
+              防衛
+            </button>
+          </div>
+        </div>
+        
+        <!-- Skill Filter -->
+        <div>
+          <label class="block text-white text-sm font-semibold mb-3">スキル</label>
+          <div class="grid grid-cols-5 gap-2" id="skill-filter-container">
+            <button onclick="filterBySkill('')" class="skill-filter-btn active p-3 bg-gray-700 hover:bg-gray-600 rounded-lg border-2 border-transparent transition-all duration-300" data-skill="">
+              <div class="w-10 h-10 mx-auto flex items-center justify-center bg-gray-600 rounded">
+                <i class="fas fa-globe text-white text-lg"></i>
+              </div>
+            </button>
+            <button onclick="filterBySkill('skill_1')" class="skill-filter-btn p-3 bg-gray-700 hover:bg-gray-600 rounded-lg border-2 border-transparent transition-all duration-300" data-skill="skill_1">
+              <div class="w-10 h-10 mx-auto overflow-hidden rounded">
+                <img src="/static/images/agents/{{ agent.id }}/{{ agent.id }}_skill_1.png" 
+                     alt="Q Skill" 
+                     class="w-full h-full object-cover" 
+                     onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-blue-500 flex items-center justify-center\'><span class=\'text-white text-lg font-bold\'>Q</span></div>';" />
+              </div>
+            </button>
+            <button onclick="filterBySkill('skill_2')" class="skill-filter-btn p-3 bg-gray-700 hover:bg-gray-600 rounded-lg border-2 border-transparent transition-all duration-300" data-skill="skill_2">
+              <div class="w-10 h-10 mx-auto overflow-hidden rounded">
+                <img src="/static/images/agents/{{ agent.id }}/{{ agent.id }}_skill_2.png" 
+                     alt="E Skill" 
+                     class="w-full h-full object-cover" 
+                     onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-green-500 flex items-center justify-center\'><span class=\'text-white text-lg font-bold\'>E</span></div>';" />
+              </div>
+            </button>
+            <button onclick="filterBySkill('skill_3')" class="skill-filter-btn p-3 bg-gray-700 hover:bg-gray-600 rounded-lg border-2 border-transparent transition-all duration-300" data-skill="skill_3">
+              <div class="w-10 h-10 mx-auto overflow-hidden rounded">
+                <img src="/static/images/agents/{{ agent.id }}/{{ agent.id }}_skill_3.png" 
+                     alt="C Skill" 
+                     class="w-full h-full object-cover" 
+                     onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-purple-500 flex items-center justify-center\'><span class=\'text-white text-lg font-bold\'>C</span></div>';" />
+              </div>
+            </button>
+            <button onclick="filterBySkill('ult')" class="skill-filter-btn p-3 bg-gray-700 hover:bg-gray-600 rounded-lg border-2 border-transparent transition-all duration-300" data-skill="ult">
+              <div class="w-10 h-10 mx-auto overflow-hidden rounded">
+                <img src="/static/images/agents/{{ agent.id }}/{{ agent.id }}_ult.png" 
+                     alt="Ultimate" 
+                     class="w-full h-full object-cover" 
+                     onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-red-500 flex items-center justify-center\'><span class=\'text-white text-lg font-bold\'>X</span></div>';" />
+              </div>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Site Filter -->
+        <div>
+          <label class="block text-white text-sm font-semibold mb-3">サイト</label>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="filterBySite('')" class="filter-btn site-filter-btn active" data-site="">
+              すべて
+            </button>
+            <button onclick="filterBySite('A')" class="filter-btn site-filter-btn" data-site="A">
+              Aサイト
+            </button>
+            <button onclick="filterBySite('B')" class="filter-btn site-filter-btn" data-site="B">
+              Bサイト
+            </button>
+            <button onclick="filterBySite('MID')" class="filter-btn site-filter-btn" data-site="MID">
+              MID
+            </button>
+            <button onclick="filterBySite('C')" class="filter-btn site-filter-btn" data-site="C">
+              Cサイト
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Points Grid -->
+  <main class="container mx-auto px-4 pb-8">
+    {% if points %}
+      <div class="grid-container grid-points max-w-7xl mx-auto">
+        {% for point in points %}
+          <article class="point-card card group relative" 
+                   data-side="{{ point.side }}" 
+                   data-site="{{ point.site or '' }}"
+                   data-skill="{{ point.skill_type or '' }}"
+                   style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
+            <a href="/point/{{ point.id }}" class="block h-full">
+              <!-- Point Image -->
+              <div class="relative overflow-hidden rounded-t-2xl">
+                <img src="{{ point.point_image }}" 
+                     alt="{{ point.title }}" 
+                     class="w-full h-48 sm:h-52 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700"
+                     onerror="this.src='{{ point.stand_image }}'">
+                     
+                <!-- Side Badge -->
+                <div class="absolute top-2 left-2">
+                  <span class="px-2 py-1 bg-red-500/80 text-white rounded text-xs font-bold">
+                    {% if point.side == 'attack' %}攻撃{% else %}防衛{% endif %}
+                  </span>
+                </div>
+
+                <!-- Likes Badge -->
+                <div class="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs font-bold">
+                  <i class="fas fa-heart text-red-400"></i> {{ point.likes_count or 0 }}
+                </div>
+
+                <!-- Skill Type Badge -->
+                {% if point.skill_type %}
+                <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                  {% if point.skill_type == 'skill_1' %}Q スキル
+                  {% elif point.skill_type == 'skill_2' %}E スキル
+                  {% elif point.skill_type == 'skill_3' %}C スキル
+                  {% elif point.skill_type == 'ult' %}X アルティメット
+                  {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Site Badge -->
+                {% if point.site %}
+                <div class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                  {{ point.site }}サイト
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Point Info -->
+              <div class="p-4">
+                <h3 class="text-lg font-bold text-white group-hover:text-red-400 transition-colors duration-300 mb-2">
+                  {{ point.title }}
+                </h3>
+                <p class="text-white text-sm line-clamp-2 mb-3">
+                  {{ point.description }}
+                </p>
+              </div>
+            </a>
+          </article>
+        {% endfor %}
+      </div>
+    
+    {% else %}
+      <!-- Empty State -->
+      <div class="glass rounded-2xl p-12 text-center max-w-lg mx-auto" style="animation: fadeInUp 0.8s ease-out;">
+        <div class="w-24 h-24 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/30">
+          <i class="fas fa-crosshairs text-4xl text-red-400"></i>
+        </div>
+        <h3 class="text-3xl font-bold text-white mb-4">{{ map_info.name }} × {{ agent.name }}の定点を募集中！</h3>
+        <p class="text-white mb-6">この組み合わせの定点はまだ投稿されていません</p>
+        
+        <div class="space-y-4">
+          <a href="/add" class="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4">
+            <i class="fas fa-star"></i>
+            <span>最初の定点を投稿する</span>
+          </a>
+          
+          <div class="text-sm text-white">
+            <p class="mb-2">💡 {{ agent.name }}使いの皆さんへ</p>
+            <div class="flex flex-wrap justify-center gap-3 text-xs">
+              <span class="bg-gray-700/50 px-3 py-1 rounded-full">あなたの知識を共有</span>
+              <span class="bg-gray-700/50 px-3 py-1 rounded-full">コミュニティに貢献</span>
+              <span class="bg-gray-700/50 px-3 py-1 rounded-full">他プレイヤーから感謝</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-8 pt-6 border-t border-gray-600">
+          <p class="text-white text-sm mb-4">または他のエージェントを試してみる</p>
+          <a href="/map/{{ map_info.id }}" class="text-red-400 hover:text-red-300 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>エージェント選択に戻る
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <style>
+    .filter-btn {
+      @apply px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300 flex items-center gap-2 text-sm font-medium border-2 border-transparent;
+      color: white !important;
+    }
+    
+    .filter-btn.active {
+      @apply bg-red-500 hover:bg-red-600 border-red-400;
+      color: #ff4655 !important;
+      background-color: rgba(255, 70, 85, 0.2) !important;
+      border-color: #ff4655 !important;
+    }
+    
+    .skill-filter-btn.active {
+      @apply border-red-400 bg-gray-600;
+    }
+    
+    .skill-filter-btn:hover {
+      @apply border-gray-500;
+    }
+    
+    .point-card.hidden {
+      display: none;
+    }
+  </style>
+
+  <script>
+    // Current filter state
+    let currentFilters = {
+      side: '',
+      skill: '',
+      site: ''
+    };
+
+    // Filter by side  
+    function filterBySide(side) {
+      currentFilters.side = side;
+      updateSideButtons(side);
+      applyFilters();
+    }
+
+    // Filter by skill
+    function filterBySkill(skill) {
+      currentFilters.skill = skill;
+      updateSkillButtons(skill);
+      applyFilters();
+    }
+
+    // Filter by site
+    function filterBySite(site) {
+      currentFilters.site = site;
+      updateSiteButtons(site);
+      applyFilters();
+    }
+
+    // Update side filter buttons
+    function updateSideButtons(activeSide) {
+      document.querySelectorAll('.side-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.side === activeSide) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // Update skill filter buttons
+    function updateSkillButtons(activeSkill) {
+      document.querySelectorAll('.skill-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-red-400', 'bg-gray-600');
+        if (btn.dataset.skill === activeSkill) {
+          btn.classList.add('active', 'border-red-400', 'bg-gray-600');
+        }
+      });
+    }
+
+    // Update site filter buttons
+    function updateSiteButtons(activeSite) {
+      document.querySelectorAll('.site-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.site === activeSite) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // Apply filters to point cards
+    function applyFilters() {
+      const pointCards = document.querySelectorAll('.point-card');
+      let visibleCount = 0;
+      
+      pointCards.forEach(card => {
+        const cardSide = card.dataset.side;
+        const cardSkill = card.dataset.skill;
+        const cardSite = card.dataset.site;
+        
+        let shouldShow = true;
+        
+        // Apply side filter
+        if (currentFilters.side && currentFilters.side !== cardSide) {
+          shouldShow = false;
+        }
+
+        // Apply skill filter
+        if (currentFilters.skill && currentFilters.skill !== cardSkill) {
+          shouldShow = false;
+        }
+
+        // Apply site filter
+        if (currentFilters.site && currentFilters.site !== cardSite) {
+          shouldShow = false;
+        }
+        
+        // Show/hide card with animation
+        if (shouldShow) {
+          card.classList.remove('hidden');
+          card.style.animation = 'fadeInUp 0.3s ease-out';
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      // Update points count
+      document.getElementById('points-count').textContent = visibleCount;
+    }
+
+    // Enhanced interactions with error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = mouseX * speed * 15;
+                const y = mouseY * speed * 15;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>

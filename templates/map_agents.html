@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ map_info.name }} - エージェント選択 | VALORANT Pointbook</title>
+
+  <!-- ✅ PWA対応 -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ff4655">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Pointbook">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- ✅ Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js')
+        .then(reg => console.log("✅ Service Worker registered"))
+        .catch(err => console.error("❌ Service Worker error:", err));
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ✅ Rajdhani Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Modern Styles -->
+  <link rel="stylesheet" href="/static/css/modern.css">
+
+  <!-- ✅ Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  {% include 'header.html' %}
+  
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    {% for i in range(8) %}
+    <div class="particle" style="left: {{ (i * 12 + 10) }}%; animation-delay: {{ i * 0.7 }}s;"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Navigation -->
+  <nav class="p-4" style="animation: slideInLeft 0.6s ease-out;">
+    <a href="/" class="inline-flex items-center gap-2 text-white hover:text-red-400 transition-colors duration-300">
+      <i class="fas fa-arrow-left"></i>
+      <span>マップ選択に戻る</span>
+    </a>
+  </nav>
+
+  <!-- Header -->
+  <header class="glass rounded-2xl mx-4 mb-8 p-6 text-center" style="animation: fadeInUp 0.8s ease-out;">
+    <div class="flex items-center justify-center gap-4 mb-4">
+      <img src="{{ map_info.image }}" 
+           alt="{{ map_info.name }}" 
+           class="w-16 h-16 rounded-full border-2 border-red-500">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-glow">
+          {{ map_info.name }}
+        </h1>
+        <p class="text-white">
+          エージェントを選択してください
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Agents by Role -->
+  <main class="container mx-auto px-4 pb-8">
+    {% for role, agents in agents_by_role.items() %}
+    {% if agents %}
+    <div class="mb-12">
+      <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        {% if role == 'controller' %}
+          <i class="fas fa-cloud text-blue-400"></i>
+          <span>コントローラー</span>
+        {% elif role == 'initiator' %}
+          <i class="fas fa-search text-yellow-400"></i>
+          <span>イニシエーター</span>
+        {% elif role == 'sentinel' %}
+          <i class="fas fa-shield-alt text-green-400"></i>
+          <span>センチネル</span>
+        {% else %}
+          <i class="fas fa-fire text-red-400"></i>
+          <span>デュエリスト</span>
+        {% endif %}
+      </h3>
+      
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {% for agent in agents %}
+        <article class="agent-card card group" data-agent="{{ agent.id }}" style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
+          <a href="/map/{{ map_info.id }}/agent/{{ agent.id }}" class="block">
+            <div class="relative overflow-hidden rounded-t-2xl">
+              <img src="{{ agent.image }}" 
+                   alt="{{ agent.name }}" 
+                   class="w-full h-32 sm:h-40 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <!-- Setup Count Badge -->
+              <div class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                {{ agent.map_setups }} 定点
+              </div>
+              
+              <!-- Role Badge -->
+              <div class="absolute top-2 left-2">
+                {% if role == 'controller' %}
+                  <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-cloud text-white text-xs"></i>
+                  </div>
+                {% elif role == 'initiator' %}
+                  <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-search text-white text-xs"></i>
+                  </div>
+                {% elif role == 'sentinel' %}
+                  <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-white text-xs"></i>
+                  </div>
+                {% else %}
+                  <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-fire text-white text-xs"></i>
+                  </div>
+                {% endif %}
+              </div>
+              
+              <div class="absolute bottom-2 left-2 right-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                <div class="flex items-center justify-center gap-2 text-white bg-black/50 backdrop-blur-sm rounded-lg py-1 px-2">
+                  <i class="fas fa-crosshairs text-xs"></i>
+                  <span class="font-semibold text-xs">定点を確認</span>
+                </div>
+              </div>
+            </div>
+            <div class="p-3">
+              <h4 class="text-sm font-bold text-white group-hover:text-red-400 transition-colors duration-300 text-center">
+                {{ agent.name }}
+              </h4>
+            </div>
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </main>
+
+  <!-- Enhanced FAB -->
+  <a href="/add" class="fab group" title="新しい定点を追加">
+    <i class="fas fa-plus transition-transform duration-300 group-hover:rotate-90"></i>
+  </a>
+
+  <script>
+    // Enhanced interactions with error handling
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Parallax effect for particles
+        document.addEventListener('mousemove', function(e) {
+          try {
+            const particles = document.querySelectorAll('.particle');
+            if (particles.length > 0) {
+              const mouseX = e.clientX / window.innerWidth;
+              const mouseY = e.clientY / window.innerHeight;
+
+              particles.forEach((particle, index) => {
+                const speed = (index + 1) * 0.3;
+                const x = mouseX * speed * 15;
+                const y = mouseY * speed * 15;
+                if (particle && particle.style) {
+                  particle.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn('Parallax error:', err);
+          }
+        });
+      } catch (err) {
+        console.error('Script initialization error:', err);
+      }
+    });
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+  </script>
+</body>
+</html>
