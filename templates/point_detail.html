@@ -164,7 +164,7 @@
             </div>
             <div>
               <h2 class="text-xl font-bold text-white">エイムポイント</h2>
-              <p class="text-gray-300 text-sm">この位置を狙ってください</p>
+              <p class="text-gray-300 text-sm">{{ point.description }}</p>
             </div>
           </div>
         </div>
@@ -377,11 +377,16 @@
       img.src = src;
       img.alt = caption;
       captionEl.textContent = caption;
+      
+      // Force display style
+      lightbox.style.display = 'flex';
       lightbox.classList.remove('hidden');
-      lightbox.classList.add('flex');
       
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
+      
+      // Add ESC key listener
+      document.addEventListener('keydown', handleEscKey);
     }
 
     function closeLightbox(event) {
@@ -390,11 +395,20 @@
       }
       
       const lightbox = document.getElementById('lightbox');
+      lightbox.style.display = 'none';
       lightbox.classList.add('hidden');
-      lightbox.classList.remove('flex');
       
       // Restore body scroll
       document.body.style.overflow = '';
+      
+      // Remove ESC key listener
+      document.removeEventListener('keydown', handleEscKey);
+    }
+    
+    function handleEscKey(event) {
+      if (event.key === 'Escape') {
+        closeLightbox();
+      }
     }
 
     // Toast notification

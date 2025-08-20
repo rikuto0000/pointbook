@@ -208,12 +208,12 @@
                    data-skill="{{ point.skill_type or '' }}"
                    style="animation: fadeInUp 0.8s ease-out {{ loop.index * 0.1 }}s both;">
             <a href="/point/{{ point.id }}" class="block h-full">
-              <!-- Point Image -->
+              <!-- Point Image (着弾画像) -->
               <div class="relative overflow-hidden rounded-t-2xl">
-                <img src="{{ point.point_image }}" 
+                <img src="{{ point.extra_image }}" 
                      alt="{{ point.title }}" 
                      class="w-full h-48 sm:h-52 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700"
-                     onerror="this.src='{{ point.stand_image }}'">
+                     onerror="this.src='{{ point.point_image }}' || this.src='{{ point.stand_image }}'">
                      
                 <!-- Map/Side Badge -->
                 <div class="absolute top-2 left-2 flex gap-1">
@@ -257,6 +257,14 @@
                 <p class="text-gray-100 text-sm line-clamp-2 mb-3">
                   {{ point.description }}
                 </p>
+                
+                <!-- Author Info -->
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-600">
+                  <img src="{{ point.author.avatar_url or 'https://ui-avatars.com/api/?name=' + point.author.username + '&background=ff4655&color=fff' }}" 
+                       alt="{{ point.author.username }}" 
+                       class="w-6 h-6 rounded-full">
+                  <span class="text-gray-300 text-xs">{{ point.author.username }}</span>
+                </div>
               </div>
             </a>
           </article>

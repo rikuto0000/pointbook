@@ -175,7 +175,7 @@
             <a href="/point/{{ point.id }}" class="block h-full">
               <!-- Point Image -->
               <div class="relative overflow-hidden rounded-t-2xl">
-                <img src="{{ point.point_image }}" 
+                <img src="{{ point.extra_image or point.point_image or point.stand_image }}" 
                      alt="{{ point.title }}" 
                      class="w-full h-48 sm:h-52 object-cover enhanced-image group-hover:scale-110 transition-transform duration-700">
                 

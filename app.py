@@ -659,6 +659,17 @@ def show_agent_points(agent_id):
                 point['stand_image'] = point.get('stand_image_url', '')
                 point['point_image'] = point.get('point_image_url', '')
                 point['extra_image'] = point.get('extra_image_url', '')
+                
+                # ユーザー情報を取得
+                if point.get('user_id'):
+                    user_result = supabase.table('profiles').select('username, avatar_url').eq('id', point['user_id']).execute()
+                    if user_result.data:
+                        point['author'] = user_result.data[0]
+                    else:
+                        point['author'] = {'username': '匿名ユーザー', 'avatar_url': None}
+                else:
+                    point['author'] = {'username': '匿名ユーザー', 'avatar_url': None}
+                
                 points.append(point)
         
         # マップ情報を取得（フィルタリング用）
@@ -774,6 +785,17 @@ def show_map_agent_points(map_id, agent_id):
                 point['stand_image'] = point.get('stand_image_url', '')
                 point['point_image'] = point.get('point_image_url', '')
                 point['extra_image'] = point.get('extra_image_url', '')
+                
+                # ユーザー情報を取得
+                if point.get('user_id'):
+                    user_result = supabase.table('profiles').select('username, avatar_url').eq('id', point['user_id']).execute()
+                    if user_result.data:
+                        point['author'] = user_result.data[0]
+                    else:
+                        point['author'] = {'username': '匿名ユーザー', 'avatar_url': None}
+                else:
+                    point['author'] = {'username': '匿名ユーザー', 'avatar_url': None}
+                
                 points.append(point)
         
         return render_template("map_agent_points.html", 
